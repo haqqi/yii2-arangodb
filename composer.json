@@ -1,0 +1,32 @@
+{
+  "name": "haqqi/yii2-arangodb",
+  "description": "Yii2 ArangoDB Component and Active Record ",
+  "license": "Apache License",
+  "authors": [
+    {
+      "name": "MF Haqqi",
+      "email": "me@haqqi.net",
+      "homepage": "http://haqqi.net",
+      "role": "Developer"
+    }
+  ],
+  "keywords": [
+    "yii2",
+    "arangodb",
+    "active record",
+    "component"
+  ],
+  "type": "yii2-extension",
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "require": {
+    "php": ">=7.0",
+    "yiisoft/yii2": ">=2.0.13",
+    "triagens/arangodb": "~3.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "haqqi\\arangodb\\": "src/"
+    }
+  }
+}
