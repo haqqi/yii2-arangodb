@@ -101,4 +101,63 @@ class Query extends Component implements QueryInterface
     {
         return $this->_offset;
     }
+
+    /**
+     * @since 2017-12-12 19:58:12
+     *
+     * @param array $condition
+     *
+     * @return Query
+     */
+    public function where($condition): Query
+    {
+        $this->_where = $condition;
+
+        return $this;
+    }
+
+    /**
+     * @since 2017-12-12 19:57:49
+     *
+     * @param array $condition
+     *
+     * @return Query
+     */
+    public function andWhere($condition): Query
+    {
+        if ($this->_where === null) {
+            $this->_where = $condition;
+        } elseif (is_array($this->_where) && isset($this->_where[0]) && strcasecmp($this->_where[0], 'and') === 0) {
+            $this->_where[] = $condition;
+        } else {
+            $this->_where = ['and', $this->_where, $condition];
+        }
+        return $this;
+    }
+
+    /**
+     * @since 2017-12-12 19:59:26
+     *
+     * @param array $condition
+     *
+     * @return Query
+     */
+    public function orWhere($condition): Query
+    {
+        if ($this->_where === null) {
+            $this->_where = $condition;
+        } else {
+            $this->_where = ['or', $this->_where, $condition];
+        }
+        
+        return $this;
+    }
+
+    /**
+     * @return array|null|string
+     */
+    public function getWhere()
+    {
+        return $this->_where;
+    }
 }
