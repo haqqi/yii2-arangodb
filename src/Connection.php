@@ -8,6 +8,8 @@ use yii\base\Component;
 
 class Connection extends Component
 {
+    public static $componentName = 'arangodb';
+
     private $connection = null;
 
     public $connectionOptions = [
