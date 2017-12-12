@@ -4,6 +4,7 @@ namespace haqqi\arangodb;
 
 use yii\base\Component;
 use yii\base\NotSupportedException;
+use yii\db\Connection;
 use yii\db\QueryInterface;
 
 class Query extends Component implements QueryInterface
@@ -346,5 +347,35 @@ class Query extends Component implements QueryInterface
 
             return $result;
         }
+    }
+
+    public function count($q = '*', $db = null)
+    {
+        throw new NotSupportedException('Count is still not supported.');
+    }
+
+    public function exists($db = null)
+    {
+        throw new NotSupportedException('Exists is still not supported.');
+    }
+
+    public function indexBy($column)
+    {
+        throw new NotSupportedException('indexBy is still not supported.');
+    }
+
+    public function emulateExecution($value = true)
+    {
+        throw new NotSupportedException('emulateExecution is still not supported.');
+    }
+
+    public function all($db = null)
+    {
+        throw new NotSupportedException('all is still not supported.');
+    }
+
+    public function one($db = null)
+    {
+        throw new NotSupportedException('one is still not supported.');
     }
 }
