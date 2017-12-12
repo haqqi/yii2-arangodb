@@ -18,6 +18,8 @@ class Query extends Component implements QueryInterface
     private $_offset;
     /** @var array Where condition */
     private $_where;
+    /** @var array Order by rule */
+    private $_orderBy;
 
     /**
      * Set collection name. Must be called only once.
@@ -306,5 +308,43 @@ class Query extends Component implements QueryInterface
     protected function isEmpty($value)
     {
         return $value === '' || $value === [] || $value === null || is_string($value) && trim($value) === '';
+    }
+
+    public function orderBy($columns)
+    {
+        $this->_orderBy = $this->normalizeOrderBy($columns);
+
+        return $this;
+    }
+
+    public function addOrderBy($columns)
+    {
+        $columns = $this->normalizeOrderBy($columns);
+        if ($this->_orderBy === null) {
+            $this->_orderBy = $columns;
+        } else {
+            $this->_orderBy = array_merge($this->_orderBy, $columns);
+        }
+
+        return $this;
+    }
+
+    protected function normalizeOrderBy($columns)
+    {
+        if (is_array($columns)) {
+            return $columns;
+        } else {
+            $columns = preg_split('/\s*,\s*/', trim($columns), -1, PREG_SPLIT_NO_EMPTY);
+            $result  = [];
+            foreach ($columns as $column) {
+                if (preg_match('/^(.*?)\s+(asc|desc)$/i', $column, $matches)) {
+                    $result[$matches[1]] = strcasecmp($matches[2], 'desc') ? SORT_ASC : SORT_DESC;
+                } else {
+                    $result[$column] = SORT_ASC;
+                }
+            }
+
+            return $result;
+        }
     }
 }
