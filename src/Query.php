@@ -21,13 +21,11 @@ class Query extends Component implements QueryInterface
     /**
      * Set collection name. Must be called only once.
      *
-     * @since 2017-12-12 19:18:51
-     *
      * @param $collectionName
      *
      * @return $this
      */
-    public function from($collectionName)
+    public function from($collectionName): Query
     {
         $this->_from = $collectionName;
 
@@ -35,27 +33,19 @@ class Query extends Component implements QueryInterface
     }
 
     /**
-     * Build from statement in AQL
-     *
-     * @since 2017-12-12 19:19:27
-     *
      * @return string
      */
-    protected function buildFrom()
+    public function getFrom(): string
     {
-        $collectionName = \trim($this->_from);
-
-        return $collectionName ? "FOR $collectionName IN $collectionName" : '';
+        return $this->_from;
     }
 
     /**
-     * @since 2017-12-12 19:25:40
-     *
      * @param $fields
      *
      * @return $this
      */
-    public function select($fields)
+    public function select($fields): Query
     {
         $this->_select = $fields;
 
@@ -63,38 +53,19 @@ class Query extends Component implements QueryInterface
     }
 
     /**
-     * @since 2017-12-12 19:31:52
-     * @return string
+     * @return array
      */
-    protected function buildSelect()
+    public function getSelect(): array
     {
-        $columns = $this->_select;
-
-        if ($columns === null || empty($columns)) {
-            return 'RETURN ' . $this->_from;
-        }
-
-        if (!is_array($columns)) {
-            return 'RETURN ' . $columns;
-        }
-
-        $returnDefinition = '';
-
-        foreach ($columns as $column) {
-            $returnDefinition .= "\"$column\": $this->_from . $column,\n";
-        }
-
-        return "RETURN {\n" . trim($returnDefinition, ', ') . "\n}";
+        return $this->_select;
     }
 
     /**
-     * @since 2017-12-12 19:22:28
-     *
      * @param int|null $limit
      *
      * @return $this
      */
-    public function limit($limit)
+    public function limit($limit): Query
     {
         $this->_limit = $limit;
 
@@ -102,15 +73,11 @@ class Query extends Component implements QueryInterface
     }
 
     /**
-     * @since 2017-12-12 19:23:37
-     *
-     * @param $limit
-     *
-     * @return bool
+     * @return int
      */
-    protected function hasLimit($limit)
+    public function getLimit(): int
     {
-        return is_string($limit) && ctype_digit($limit) || is_integer($limit) && $limit >= 0;
+        return $this->_limit;
     }
 
     /**
@@ -120,7 +87,7 @@ class Query extends Component implements QueryInterface
      *
      * @return $this
      */
-    public function offset($offset)
+    public function offset($offset): Query
     {
         $this->_offset = $offset;
 
@@ -128,32 +95,10 @@ class Query extends Component implements QueryInterface
     }
 
     /**
-     * @since 2017-12-12 19:23:56
-     *
-     * @param $offset
-     *
-     * @return bool
+     * @return int
      */
-    protected function hasOffset($offset)
+    public function getOffset(): int
     {
-        return is_integer($offset) && $offset > 0 || is_string($offset) && ctype_digit($offset) && $offset !== '0';
-    }
-
-    /**
-     * @since 2017-12-12 19:24:21
-     *
-     * @param $limit
-     * @param $offset
-     *
-     * @return string
-     */
-    protected function buildLimit($limit, $offset)
-    {
-        $aql = '';
-        if ($this->hasLimit($limit)) {
-            $aql = 'LIMIT ' . ($this->hasOffset($offset) ? $offset : '0') . ',' . $limit;
-        }
-
-        return $aql;
+        return $this->_offset;
     }
 }
