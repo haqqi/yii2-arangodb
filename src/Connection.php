@@ -4,9 +4,9 @@ namespace haqqi\arangodb;
 
 use ArangoDBClient\ConnectionOptions;
 use ArangoDBClient\UpdatePolicy;
-use yii\base\BaseObject;
+use yii\base\Component;
 
-class Connection extends BaseObject
+class Connection extends Component
 {
     private $connection = null;
 
