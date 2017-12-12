@@ -3,6 +3,7 @@
 namespace haqqi\arangodb;
 
 use yii\base\Component;
+use yii\base\NotSupportedException;
 use yii\db\QueryInterface;
 
 class Query extends Component implements QueryInterface
@@ -149,7 +150,7 @@ class Query extends Component implements QueryInterface
         } else {
             $this->_where = ['or', $this->_where, $condition];
         }
-        
+
         return $this;
     }
 
@@ -159,5 +160,151 @@ class Query extends Component implements QueryInterface
     public function getWhere()
     {
         return $this->_where;
+    }
+
+    /**
+     * @since 2017-12-12 20:17:54
+     *
+     * @param array $condition
+     *
+     * @return $this
+     * @throws NotSupportedException
+     */
+    public function filterWhere(array $condition)
+    {
+        $condition = $this->filterCondition($condition);
+        if ($condition !== []) {
+            $this->where($condition);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @since 2017-12-12 20:21:38
+     *
+     * @param array $condition
+     *
+     * @return $this
+     * @throws NotSupportedException
+     */
+    public function andFilterWhere(array $condition)
+    {
+        $condition = $this->filterCondition($condition);
+        if ($condition !== []) {
+            $this->andWhere($condition);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @since 2017-12-12 20:21:59
+     *
+     * @param array $condition
+     *
+     * @return $this
+     * @throws NotSupportedException
+     */
+    public function orFilterWhere(array $condition)
+    {
+        $condition = $this->filterCondition($condition);
+        if ($condition !== []) {
+            $this->orWhere($condition);
+        }
+
+        return $this;
+    }
+
+
+    /**
+     * @since 2017-12-12 20:17:09
+     * @see \yii\db\QueryTrait
+     *
+     * @param $condition
+     *
+     * @return array
+     * @throws NotSupportedException
+     */
+    protected function filterCondition($condition)
+    {
+        if (!is_array($condition)) {
+            return $condition;
+        }
+
+        if (!isset($condition[0])) {
+            // hash format: 'column1' => 'value1', 'column2' => 'value2', ...
+            foreach ($condition as $name => $value) {
+                if ($this->isEmpty($value)) {
+                    unset($condition[$name]);
+                }
+            }
+
+            return $condition;
+        }
+
+        // operator format: operator, operand 1, operand 2, ...
+
+        $operator = array_shift($condition);
+
+        switch (strtoupper($operator)) {
+            case 'NOT':
+            case 'AND':
+            case 'OR':
+                foreach ($condition as $i => $operand) {
+                    $subCondition = $this->filterCondition($operand);
+                    if ($this->isEmpty($subCondition)) {
+                        unset($condition[$i]);
+                    } else {
+                        $condition[$i] = $subCondition;
+                    }
+                }
+
+                if (empty($condition)) {
+                    return [];
+                }
+                break;
+            case 'IN':
+            case 'LIKE':
+                if (array_key_exists(1, $condition) && $this->isEmpty($condition[1])) {
+                    return [];
+                }
+                break;
+            case 'BETWEEN':
+            case 'NOT BETWEEN':
+                if (array_key_exists(1, $condition) && array_key_exists(2, $condition)) {
+                    if ($this->isEmpty($condition[1]) || $this->isEmpty($condition[2])) {
+                        return [];
+                    }
+                }
+                break;
+            default:
+                throw new NotSupportedException("Operator not supported: $operator");
+        }
+
+        array_unshift($condition, $operator);
+
+        return $condition;
+    }
+
+    /**
+     * Returns a value indicating whether the give value is "empty".
+     *
+     * The value is considered "empty", if one of the following conditions is satisfied:
+     *
+     * - it is `null`,
+     * - an empty string (`''`),
+     * - a string containing only whitespace characters,
+     * - or an empty array.
+     *
+     * @see \yii\db\QueryTrait
+     *
+     * @param mixed $value
+     *
+     * @return bool if the value is empty
+     */
+    protected function isEmpty($value)
+    {
+        return $value === '' || $value === [] || $value === null || is_string($value) && trim($value) === '';
     }
 }
