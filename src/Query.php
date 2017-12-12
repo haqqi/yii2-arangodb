@@ -39,22 +39,52 @@ class Query extends Component implements QueryInterface
      *
      * @since 2017-12-12 19:19:27
      *
-     * @param $collectionName
-     *
      * @return string
      */
-    protected function buildFrom($collectionName)
+    protected function buildFrom()
     {
-        $collectionName = \trim($collectionName);
+        $collectionName = \trim($this->_from);
 
         return $collectionName ? "FOR $collectionName IN $collectionName" : '';
     }
 
+    /**
+     * @since 2017-12-12 19:25:40
+     *
+     * @param $fields
+     *
+     * @return $this
+     */
     public function select($fields)
     {
         $this->_select = $fields;
 
         return $this;
+    }
+
+    /**
+     * @since 2017-12-12 19:31:52
+     * @return string
+     */
+    protected function buildSelect()
+    {
+        $columns = $this->_select;
+
+        if ($columns === null || empty($columns)) {
+            return 'RETURN ' . $this->_from;
+        }
+
+        if (!is_array($columns)) {
+            return 'RETURN ' . $columns;
+        }
+
+        $returnDefinition = '';
+
+        foreach ($columns as $column) {
+            $returnDefinition .= "\"$column\": $this->_from . $column,\n";
+        }
+
+        return "RETURN {\n" . trim($returnDefinition, ', ') . "\n}";
     }
 
     /**
