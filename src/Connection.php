@@ -34,6 +34,11 @@ class Connection extends BaseObject
         ConnectionOptions::OPTION_UPDATE_POLICY => UpdatePolicy::LAST,
     ];
 
+    /**
+     * @author Haqqi <me@haqqi.net>
+     * @since 2017-12-12 07:12:51
+     * @throws \Exception
+     */
     public function init()
     {
         parent::init();
@@ -46,7 +51,7 @@ class Connection extends BaseObject
 
             $this->connection = new \ArangoDBClient\Connection($this->connectionOptions);
         } catch (\Exception $e) {
-
+            throw new \Exception($e->getMessage(), (int) $e->getCode(), $e);
         } finally {
             \Yii::endProfile($token, 'haqqi\arangodb\Connection::open');
         }
