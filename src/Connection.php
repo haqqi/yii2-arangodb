@@ -2,7 +2,12 @@
 
 namespace haqqi\arangodb;
 
+use ArangoDBClient\CollectionHandler;
 use ArangoDBClient\ConnectionOptions;
+use ArangoDBClient\DocumentHandler;
+use ArangoDBClient\EdgeHandler;
+use ArangoDBClient\Export;
+use ArangoDBClient\Statement;
 use ArangoDBClient\UpdatePolicy;
 use yii\base\Component;
 
@@ -10,7 +15,8 @@ class Connection extends Component
 {
     public static $componentName = 'arangodb';
 
-    private $connection = null;
+    /** @var \ArangoDBClient\Connection */
+    private $_connection = null;
 
     public $connectionOptions = [
         // server endpoint to connect to
@@ -36,6 +42,13 @@ class Connection extends Component
         ConnectionOptions::OPTION_UPDATE_POLICY => UpdatePolicy::LAST,
     ];
 
+    /** @var null|CollectionHandler $_collectionHandler */
+    private $_collectionHandler = null;
+    /** @var null|DocumentHandler $_documentHandler */
+    private $_documentHandler = null;
+    /** @var null|EdgeHandler $_documentHandler */
+    private $_edgeHandler = null;
+
     /**
      * @author Haqqi <me@haqqi.net>
      * @since 2017-12-12 07:12:51
@@ -51,11 +64,88 @@ class Connection extends Component
             \Yii::info($token, 'haqqi\arangodb\Connection::open');
             \Yii::beginProfile($token, 'haqqi\arangodb\Connection::open');
 
-            $this->connection = new \ArangoDBClient\Connection($this->connectionOptions);
+            // prepare the variable
+            $this->_connection        = new \ArangoDBClient\Connection($this->connectionOptions);
+            $this->_collectionHandler = new CollectionHandler($this->_connection);
+            $this->_documentHandler   = new DocumentHandler($this->_connection);
+            $this->_edgeHandler       = new EdgeHandler($this->_connection);
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage(), (int) $e->getCode(), $e);
         } finally {
             \Yii::endProfile($token, 'haqqi\arangodb\Connection::open');
         }
+    }
+
+    /**
+     * @author Haqqi <me@haqqi.net>
+     * @since 2017-12-12 12:05 PM
+     *
+     * @return CollectionHandler
+     */
+    public function getCollectionHandler()
+    {
+        return $this->_collectionHandler;
+    }
+
+    /**
+     * @author Haqqi <me@haqqi.net>
+     * @since 2017-12-12 12:04:55
+     *
+     * @param $collectionId
+     *
+     * @return \ArangoDBClient\Collection
+     * @throws \ArangoDBClient\Exception
+     */
+    public function getCollection($collectionId)
+    {
+        return $this->_collectionHandler->get($collectionId);
+    }
+
+    /**
+     * @author Haqqi <me@haqqi.net>
+     * @since 2017-12-12 12:05 PM
+     *
+     * @return DocumentHandler
+     */
+    public function getDocumentHandler()
+    {
+        return $this->_documentHandler;
+    }
+
+    /**
+     * @author Haqqi <me@haqqi.net>
+     * @since 2017-12-12 12:05 PM
+     *
+     * @return EdgeHandler
+     */
+    public function getEdgeHandler()
+    {
+        return $this->_edgeHandler;
+    }
+
+    /**
+     * @author Haqqi <me@haqqi.net>
+     * @since 2017-12-12 12:05:02
+     *
+     * @param array $options
+     *
+     * @return Statement
+     */
+    public function getStatement($options = [])
+    {
+        return new Statement($this->_connection, $options);
+    }
+
+    /**
+     * @author Haqqi <me@haqqi.net>
+     * @since 2017-12-12 12:06:07
+     *
+     * @param array $options
+     *
+     * @return Export
+     */
+    public function getExport($options = [])
+    {
+        return new Export($this->_connection, $options);
     }
 }
