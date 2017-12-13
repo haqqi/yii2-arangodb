@@ -6,15 +6,29 @@ use yii\base\BaseObject;
 
 class QueryBuilder extends BaseObject
 {
+    public $separator = ' ';
+
     /**
-     * @since 2017-12-12 19:35:58
+     * @since 2017-12-13 12:09:01
      *
      * @param Query $query
      * @param array $params
+     *
+     * @return string
      */
-    public function build($query, $params)
+    public function build($query, $params = [])
     {
+        $params = empty($params) ? $query->params : array_merge($params, $query->params);
 
+        $clauses = [
+            $this->buildFrom($query->getFrom()),
+            $this->buildLimit($query->getLimit(), $query->getOffset()),
+            $this->buildSelect($query->getFrom(), $query->getSelect())
+        ];
+
+        $aql = \implode($this->separator, $clauses);
+
+        return $aql;
     }
 
     /**
@@ -49,13 +63,13 @@ class QueryBuilder extends BaseObject
             return 'RETURN ' . $columns;
         }
 
-        $returnDefinition = '';
+        $returnDefinition = [];
 
         foreach ($columns as $column) {
-            $returnDefinition .= "\"$column\": $collectionName . $column,\n"; // @todo: quote the column
+            $returnDefinition[$column] = "$collectionName.$column"; // @todo: quote the column
         }
 
-        return "RETURN {\n" . trim($returnDefinition, ', ') . "\n}";
+        return "RETURN { " . \implode(', ', $returnDefinition) . "}";
     }
 
     /**
@@ -90,7 +104,7 @@ class QueryBuilder extends BaseObject
     {
         $aql = '';
         if ($this->hasLimit($limit)) {
-            $aql = 'LIMIT ' . ($this->hasOffset($offset) ? $offset : '0') . ',' . $limit;
+            $aql = 'LIMIT ' . ($this->hasOffset($offset) ? $offset : '0') . ', ' . $limit;
         }
 
         return $aql;
