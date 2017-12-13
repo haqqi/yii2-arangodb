@@ -4,13 +4,12 @@ namespace haqqi\arangodb;
 
 use yii\base\Component;
 use yii\base\NotSupportedException;
-use yii\db\Connection;
 use yii\db\QueryInterface;
 
 class Query extends Component implements QueryInterface
 {
     /** @var array Attribute name */
-    private $_select = [];
+    private $_select;
     /** @var string Collection id */
     private $_from;
     /** @var int Limit of the record */
@@ -21,6 +20,8 @@ class Query extends Component implements QueryInterface
     private $_where;
     /** @var array Order by rule */
     private $_orderBy;
+
+    public $params = [];
 
     /**
      * Set collection name. Must be called only once.
@@ -59,7 +60,7 @@ class Query extends Component implements QueryInterface
     /**
      * @return array
      */
-    public function getSelect(): array
+    public function getSelect()
     {
         return $this->_select;
     }
@@ -77,9 +78,9 @@ class Query extends Component implements QueryInterface
     }
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getLimit(): int
+    public function getLimit()
     {
         return $this->_limit;
     }
@@ -99,9 +100,9 @@ class Query extends Component implements QueryInterface
     }
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getOffset(): int
+    public function getOffset()
     {
         return $this->_offset;
     }
@@ -311,6 +312,13 @@ class Query extends Component implements QueryInterface
         return $value === '' || $value === [] || $value === null || is_string($value) && trim($value) === '';
     }
 
+    /**
+     * @since 2017-12-12 20:36:40
+     *
+     * @param array|string $columns
+     *
+     * @return $this
+     */
     public function orderBy($columns)
     {
         $this->_orderBy = $this->normalizeOrderBy($columns);
@@ -318,6 +326,13 @@ class Query extends Component implements QueryInterface
         return $this;
     }
 
+    /**
+     * @since 2017-12-12 20:36:43
+     *
+     * @param array|string $columns
+     *
+     * @return $this
+     */
     public function addOrderBy($columns)
     {
         $columns = $this->normalizeOrderBy($columns);
@@ -330,6 +345,13 @@ class Query extends Component implements QueryInterface
         return $this;
     }
 
+    /**
+     * @since 2017-12-12 20:36:49
+     *
+     * @param $columns
+     *
+     * @return array|array[]|false|string[]
+     */
     protected function normalizeOrderBy($columns)
     {
         if (is_array($columns)) {
@@ -351,7 +373,24 @@ class Query extends Component implements QueryInterface
 
     public function count($q = '*', $db = null)
     {
-        throw new NotSupportedException('Count is still not supported.');
+        // save for temporarily variable
+        $select  = $this->_select;
+        $orderBy = $this->_orderBy;
+        $limit   = $this->_limit;
+        $offset  = $this->_offset;
+
+        // set it to null
+        $this->_select  = ['_key']; // set to key only
+        $this->_orderBy = null;
+        $this->_limit   = null;
+        $this->_offset  = null;
+
+
+
+        $this->_select  = $select;
+        $this->_orderBy = $orderBy;
+        $this->_limit   = $limit;
+        $this->_offset  = $offset;
     }
 
     public function exists($db = null)
@@ -371,11 +410,18 @@ class Query extends Component implements QueryInterface
 
     public function all($db = null)
     {
-        throw new NotSupportedException('all is still not supported.');
+        /** @var QueryBuilder $builder */
+        $builder = \Yii::$app->arangodb->queryBuilder;
+
+        return $builder->build($this);
     }
 
     public function one($db = null)
     {
         throw new NotSupportedException('one is still not supported.');
+    }
+
+    public function createCommand($db = null) {
+
     }
 }
