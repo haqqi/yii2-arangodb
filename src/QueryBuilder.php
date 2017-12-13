@@ -66,7 +66,7 @@ class QueryBuilder extends BaseObject
         $returnDefinition = [];
 
         foreach ($columns as $column) {
-            $returnDefinition[$column] = "$collectionName.$column"; // @todo: quote the column
+            $returnDefinition[$column] = "$column: $collectionName.$column"; // @todo: quote the column
         }
 
         return "RETURN { " . \implode(', ', $returnDefinition) . "}";
