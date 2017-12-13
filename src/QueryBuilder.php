@@ -22,9 +22,12 @@ class QueryBuilder extends BaseObject
 
         $clauses = [
             $this->buildFrom($query->getFrom()),
+            $this->buildOrderBy($query->getOrderBy()),
             $this->buildLimit($query->getLimit(), $query->getOffset()),
             $this->buildSelect($query->getFrom(), $query->getSelect())
         ];
+
+        $clauses = \array_filter($clauses);
 
         $aql = \implode($this->separator, $clauses);
 
@@ -108,5 +111,18 @@ class QueryBuilder extends BaseObject
         }
 
         return $aql;
+    }
+
+    protected function buildOrderBy($columns)
+    {
+        if (empty($columns)) {
+            return '';
+        }
+        $orders = [];
+        foreach ($columns as $name => $direction) {
+            $orders[] = $name . ($direction === SORT_DESC ? ' DESC' : ''); // @todo: quote column name
+        }
+
+        return 'SORT ' . implode(', ', $orders);
     }
 }

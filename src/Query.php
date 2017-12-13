@@ -371,6 +371,14 @@ class Query extends Component implements QueryInterface
         }
     }
 
+    /**
+     * @return array|null
+     */
+    public function getOrderBy()
+    {
+        return $this->_orderBy;
+    }
+
     public function count($q = '*', $db = null)
     {
         // save for temporarily variable
