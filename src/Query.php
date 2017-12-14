@@ -36,11 +36,7 @@ class Query extends Component implements QueryInterface
     public function from($collectionName, $as = null): Query
     {
         $this->_from = $collectionName;
-        if (empty($as)) {
-            $this->_as = $collectionName;
-        } else {
-            $this->_as = $as;
-        }
+        $this->_as   = (empty($as)) ? $collectionName : $as;
 
         return $this;
     }
