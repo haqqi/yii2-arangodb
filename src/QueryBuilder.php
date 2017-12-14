@@ -168,7 +168,7 @@ class QueryBuilder extends BaseObject
             $collection = $this->quoteName($collection) . '.';
             $name       = \substr($name, $pos + 1);
         } else {
-            $collection = $this->quoteName($this->_query->getFrom());
+            $collection = $this->quoteName($this->_query->getAs());
         }
 
         return $collection . $this->quoteName($name);
