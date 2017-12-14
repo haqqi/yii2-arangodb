@@ -145,14 +145,32 @@ class QueryBuilder extends BaseObject
     protected function quoteName($name)
     {
         // if it is function, or already escaped, no need to quote it
-        if (strpos($name, '(') !== false) {
+        if (\strpos($name, '(') !== false) {
             return $name;
         }
         // if it is already quoted, no need to escape
-        if (strpos($name, '`') === false) {
+        if (\strpos($name, '`') !== false) {
             return $name;
         }
 
         return \sprintf('`%s`', $name);
+    }
+
+    protected function normalizeColumnName($name)
+    {
+        // if it is function, no need to normalize it
+        if (\strpos($name, '(') !== false) {
+            return $name;
+        }
+        // if it is already has collection name, no need to normalize it
+        if (($pos = \strpos($name, '.')) !== false) {
+            $collection = substr($name, 0, $pos);
+            $collection = $this->quoteName($collection) . '.';
+            $name       = \substr($name, $pos + 1);
+        } else {
+            $collection = $this->quoteName($this->_query->getFrom());
+        }
+
+        return $collection . $this->quoteName($name);
     }
 }
