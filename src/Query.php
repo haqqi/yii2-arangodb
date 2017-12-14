@@ -22,8 +22,23 @@ class Query extends Component implements QueryInterface
     private $_where;
     /** @var array Order by rule */
     private $_orderBy;
+    /** @var QueryBuilder */
+    private $_queryBuilder;
 
     public $params = [];
+
+    /**
+     * @since 2017-12-14 10:25:01
+     * @return QueryBuilder
+     */
+    protected function getQueryBuilder()
+    {
+        if($this->_queryBuilder == null) {
+            $this->_queryBuilder = new QueryBuilder();
+        }
+
+        return $this->_queryBuilder;
+    }
 
     /**
      * Set collection name. Must be called only once.
