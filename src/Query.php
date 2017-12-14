@@ -28,7 +28,8 @@ class Query extends Component implements QueryInterface
     /**
      * Set collection name. Must be called only once.
      *
-     * @param $collectionName
+     * @param string $collectionName
+     * @param string $as Variable name to be run in "AQL for loop". If it is not set, it will use collection name.
      *
      * @return $this
      */
@@ -45,11 +46,12 @@ class Query extends Component implements QueryInterface
     }
 
     /**
-     * @return string
+     * @since 2017-12-14 10:16:34
+     * @return array consists of 2 elements. first is collection name, second is "as" name
      */
-    public function getFrom(): string
+    public function getFrom(): array
     {
-        return $this->_from;
+        return [$this->_from, $this->_as];
     }
 
     /**
@@ -401,7 +403,6 @@ class Query extends Component implements QueryInterface
         $this->_offset  = null;
 
 
-
         $this->_select  = $select;
         $this->_orderBy = $orderBy;
         $this->_limit   = $limit;
@@ -436,7 +437,8 @@ class Query extends Component implements QueryInterface
         throw new NotSupportedException('one is still not supported.');
     }
 
-    public function createCommand($db = null) {
+    public function createCommand($db = null)
+    {
 
     }
 }
