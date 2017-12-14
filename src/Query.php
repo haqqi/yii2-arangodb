@@ -33,7 +33,7 @@ class Query extends Component implements QueryInterface
      */
     protected function getQueryBuilder()
     {
-        if($this->_queryBuilder == null) {
+        if ($this->_queryBuilder == null) {
             $this->_queryBuilder = new QueryBuilder($this);
         }
 
@@ -58,11 +58,20 @@ class Query extends Component implements QueryInterface
 
     /**
      * @since 2017-12-14 10:16:34
-     * @return array consists of 2 elements. first is collection name, second is "as" name
+     * @return string
      */
-    public function getFrom(): array
+    public function getFrom(): string
     {
-        return [$this->_from, $this->_as];
+        return $this->_from;
+    }
+
+    /**
+     * @since 2017-12-14 11:45:22
+     * @return string
+     */
+    public function getAs(): string
+    {
+        return $this->_as;
     }
 
     /**
