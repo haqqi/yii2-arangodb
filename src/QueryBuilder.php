@@ -32,15 +32,15 @@ class QueryBuilder extends BaseObject
      *
      * @return string
      */
-    public function build($query, $params = [])
+    public function build($params = [])
     {
-        $params = empty($params) ? $query->params : array_merge($params, $query->params);
+//        $params = empty($params) ? $query->params : array_merge($params, $query->params);
 
         $clauses = [
-            $this->buildFrom($query->getFrom()),
-            $this->buildOrderBy($query->getOrderBy()),
-            $this->buildLimit($query->getLimit(), $query->getOffset()),
-            $this->buildSelect($query->getFrom(), $query->getSelect())
+            $this->buildFrom(),
+            $this->buildOrderBy(),
+            $this->buildLimit(),
+            $this->buildSelect()
         ];
 
         $clauses = \array_filter($clauses);
@@ -57,11 +57,15 @@ class QueryBuilder extends BaseObject
      *
      * @return string
      */
-    protected function buildFrom($collectionName)
+    protected function buildFrom()
     {
-        $collectionName = \trim($collectionName);
+        $collectionName = \trim($this->_query->getFrom());
+        $asName         = \trim($this->_query->getAs());
 
-        return $collectionName ? "FOR $collectionName IN $collectionName" : '';
+        $collectionName = $this->quoteName($collectionName);
+        $asName         = $this->quoteName($asName);
+
+        return $collectionName ? "FOR $asName IN $collectionName" : '';
     }
 
     /**
@@ -72,10 +76,12 @@ class QueryBuilder extends BaseObject
      *
      * @return string
      */
-    protected function buildSelect($collectionName, $columns)
+    protected function buildSelect()
     {
+        $columns = $this->_query->getSelect();
+
         if ($columns === null || empty($columns)) {
-            return 'RETURN ' . $collectionName;
+            return 'RETURN ' . $this->_query->getAs();
         }
 
         if (!is_array($columns)) {
@@ -85,7 +91,7 @@ class QueryBuilder extends BaseObject
         $returnDefinition = [];
 
         foreach ($columns as $column) {
-            $returnDefinition[$column] = "$column: $collectionName.$column"; // @todo: quote the column
+            $returnDefinition[$column] = "$column: " . $this->normalizeColumnName($column);
         }
 
         return "RETURN { " . \implode(', ', $returnDefinition) . "}";
@@ -119,9 +125,12 @@ class QueryBuilder extends BaseObject
      *
      * @return string
      */
-    protected function buildLimit($limit, $offset)
+    protected function buildLimit()
     {
-        $aql = '';
+        $aql    = '';
+        $limit  = $this->_query->getLimit();
+        $offset = $this->_query->getOffset();
+
         if ($this->hasLimit($limit)) {
             $aql = 'LIMIT ' . ($this->hasOffset($offset) ? $offset : '0') . ', ' . $limit;
         }
@@ -129,14 +138,16 @@ class QueryBuilder extends BaseObject
         return $aql;
     }
 
-    protected function buildOrderBy($columns)
+    protected function buildOrderBy()
     {
+        $columns = $this->_query->getOrderBy();
+
         if (empty($columns)) {
             return '';
         }
         $orders = [];
         foreach ($columns as $name => $direction) {
-            $orders[] = $name . ($direction === SORT_DESC ? ' DESC' : ''); // @todo: quote column name
+            $orders[] = $this->normalizeColumnName($name) . ($direction === SORT_DESC ? ' DESC' : ''); // @todo: quote column name
         }
 
         return 'SORT ' . implode(', ', $orders);
@@ -168,7 +179,7 @@ class QueryBuilder extends BaseObject
             $collection = $this->quoteName($collection) . '.';
             $name       = \substr($name, $pos + 1);
         } else {
-            $collection = $this->quoteName($this->_query->getAs());
+            $collection = $this->quoteName($this->_query->getAs()) . '.';
         }
 
         return $collection . $this->quoteName($name);
