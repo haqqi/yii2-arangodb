@@ -446,10 +446,7 @@ class Query extends Component implements QueryInterface
 
     public function all($db = null)
     {
-        /** @var QueryBuilder $builder */
-        $builder = \Yii::$app->arangodb->queryBuilder;
-
-        return $builder->build($this);
+        return $this->getQueryBuilder()->build();
     }
 
     public function one($db = null)
