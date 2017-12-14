@@ -6,6 +6,7 @@ use yii\base\BaseObject;
 
 class QueryBuilder extends BaseObject
 {
+    /** @var Query */
     private $_query;
 
     public $separator = ' ';
@@ -139,5 +140,19 @@ class QueryBuilder extends BaseObject
         }
 
         return 'SORT ' . implode(', ', $orders);
+    }
+
+    protected function quoteName($name)
+    {
+        // if it is function, or already escaped, no need to quote it
+        if (strpos($name, '(') !== false) {
+            return $name;
+        }
+        // if it is already quoted, no need to escape
+        if (strpos($name, '`') === false) {
+            return $name;
+        }
+
+        return \sprintf('`%s`', $name);
     }
 }
