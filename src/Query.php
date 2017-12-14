@@ -8,10 +8,12 @@ use yii\db\QueryInterface;
 
 class Query extends Component implements QueryInterface
 {
-    /** @var array Attribute name */
-    private $_select;
     /** @var string Collection id */
     private $_from;
+    /** @var string Main document alias in loop */
+    private $_as;
+    /** @var array Attribute name */
+    private $_select;
     /** @var int Limit of the record */
     private $_limit;
     /** @var int Offset of the record */
@@ -30,9 +32,14 @@ class Query extends Component implements QueryInterface
      *
      * @return $this
      */
-    public function from($collectionName): Query
+    public function from($collectionName, $as = null): Query
     {
         $this->_from = $collectionName;
+        if (empty($as)) {
+            $this->_as = $collectionName;
+        } else {
+            $this->_as = $as;
+        }
 
         return $this;
     }
