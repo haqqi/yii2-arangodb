@@ -6,7 +6,22 @@ use yii\base\BaseObject;
 
 class QueryBuilder extends BaseObject
 {
+    private $_query;
+
     public $separator = ' ';
+
+    /**
+     * QueryBuilder constructor.
+     *
+     * @param Query $query
+     * @param array $config
+     */
+    public function __construct($query, $config = [])
+    {
+        $this->_query = $query;
+
+        parent::__construct($config);
+    }
 
     /**
      * @since 2017-12-13 12:09:01

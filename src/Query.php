@@ -34,7 +34,7 @@ class Query extends Component implements QueryInterface
     protected function getQueryBuilder()
     {
         if($this->_queryBuilder == null) {
-            $this->_queryBuilder = new QueryBuilder();
+            $this->_queryBuilder = new QueryBuilder($this);
         }
 
         return $this->_queryBuilder;
