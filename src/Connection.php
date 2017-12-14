@@ -48,8 +48,6 @@ class Connection extends Component
     private $_documentHandler = null;
     /** @var null|EdgeHandler $_documentHandler */
     private $_edgeHandler = null;
-    /** @var null|QueryBuilder $_queryBuilder */
-    private $_queryBuilder = null;
 
     /**
      * @author Haqqi <me@haqqi.net>
@@ -71,7 +69,6 @@ class Connection extends Component
             $this->_collectionHandler = new CollectionHandler($this->_connection);
             $this->_documentHandler   = new DocumentHandler($this->_connection);
             $this->_edgeHandler       = new EdgeHandler($this->_connection);
-            $this->_queryBuilder      = new QueryBuilder();
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage(), (int) $e->getCode(), $e);
         } finally {
@@ -150,10 +147,5 @@ class Connection extends Component
     public function getExport($options = [])
     {
         return new Export($this->_connection, $options);
-    }
-
-    public function getQueryBuilder()
-    {
-        return $this->_queryBuilder;
     }
 }
