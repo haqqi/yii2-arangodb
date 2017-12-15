@@ -22,6 +22,8 @@ class Query extends Component implements QueryInterface
     private $_where;
     /** @var array Order by rule */
     private $_orderBy;
+    /** @var string Index by column */
+    private $_indexBy;
 
     public $params = [];
 
@@ -91,7 +93,11 @@ class Query extends Component implements QueryInterface
 
     ////////////////////////////
     /// End of Getter Area /////
-    /// ////////////////////////
+    ////////////////////////////
+
+    ////////////////////////////
+    // Active Query Area ///////
+    ////////////////////////////
 
     /**
      * Set collection name. Must be called only once.
@@ -252,7 +258,6 @@ class Query extends Component implements QueryInterface
         return $this;
     }
 
-
     /**
      * @since 2017-12-12 20:17:09
      * @see \yii\db\QueryTrait
@@ -403,6 +408,21 @@ class Query extends Component implements QueryInterface
         }
     }
 
+    /**
+     * @since 2017-12-16 00:23:58
+     *
+     * @param callable|string $column
+     *
+     * @return $this|void
+     */
+    public function indexBy($column)
+    {
+        $this->_indexBy = $column;
+    }
+
+    /////////////////////////////////////////
+    // End of Active Query Area /////////////
+    /////////////////////////////////////////
 
     public function count($q = '*', $db = null)
     {
@@ -430,11 +450,6 @@ class Query extends Component implements QueryInterface
         throw new NotSupportedException('Exists is still not supported.');
     }
 
-    public function indexBy($column)
-    {
-        throw new NotSupportedException('indexBy is still not supported.');
-    }
-
     public function emulateExecution($value = true)
     {
         throw new NotSupportedException('emulateExecution is still not supported.');
@@ -448,10 +463,5 @@ class Query extends Component implements QueryInterface
     public function one($db = null)
     {
         throw new NotSupportedException('one is still not supported.');
-    }
-
-    public function createCommand($db = null)
-    {
-
     }
 }
