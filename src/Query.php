@@ -27,6 +27,74 @@ class Query extends Component implements QueryInterface
 
     public $params = [];
 
+    public $options = [];
+
+    ////////////////////////////
+    //// Getter Area ///////////
+    ////////////////////////////
+
+    /**
+     * @since 2017-12-14 10:16:34
+     * @return string
+     */
+    public function getFrom(): string
+    {
+        return $this->_from;
+    }
+
+    /**
+     * @since 2017-12-14 11:45:22
+     * @return string
+     */
+    public function getAs(): string
+    {
+        return $this->_as;
+    }
+
+    /**
+     * @return array
+     */
+    public function getSelect()
+    {
+        return $this->_select;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getLimit()
+    {
+        return $this->_limit;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getOffset()
+    {
+        return $this->_offset;
+    }
+
+    /**
+     * @return array|null|string
+     */
+    public function getWhere()
+    {
+        return $this->_where;
+    }
+
+    /**
+     * @return array|null
+     */
+    public function getOrderBy()
+    {
+        return $this->_orderBy;
+    }
+
+    ////////////////////////////
+    /// End of Getter Area /////
+    /// ////////////////////////
+
     /**
      * @since 2017-12-14 10:25:01
      * @return QueryBuilder
@@ -57,24 +125,6 @@ class Query extends Component implements QueryInterface
     }
 
     /**
-     * @since 2017-12-14 10:16:34
-     * @return string
-     */
-    public function getFrom(): string
-    {
-        return $this->_from;
-    }
-
-    /**
-     * @since 2017-12-14 11:45:22
-     * @return string
-     */
-    public function getAs(): string
-    {
-        return $this->_as;
-    }
-
-    /**
      * @param $fields
      *
      * @return $this
@@ -87,14 +137,6 @@ class Query extends Component implements QueryInterface
     }
 
     /**
-     * @return array
-     */
-    public function getSelect()
-    {
-        return $this->_select;
-    }
-
-    /**
      * @param int|null $limit
      *
      * @return $this
@@ -104,14 +146,6 @@ class Query extends Component implements QueryInterface
         $this->_limit = $limit;
 
         return $this;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getLimit()
-    {
-        return $this->_limit;
     }
 
     /**
@@ -129,17 +163,9 @@ class Query extends Component implements QueryInterface
     }
 
     /**
-     * @return int|null
-     */
-    public function getOffset()
-    {
-        return $this->_offset;
-    }
-
-    /**
      * @since 2017-12-12 19:58:12
      *
-     * @param array $condition
+     * @param array|string $condition
      *
      * @return Query
      */
@@ -185,14 +211,6 @@ class Query extends Component implements QueryInterface
         }
 
         return $this;
-    }
-
-    /**
-     * @return array|null|string
-     */
-    public function getWhere()
-    {
-        return $this->_where;
     }
 
     /**
@@ -400,13 +418,6 @@ class Query extends Component implements QueryInterface
         }
     }
 
-    /**
-     * @return array|null
-     */
-    public function getOrderBy()
-    {
-        return $this->_orderBy;
-    }
 
     public function count($q = '*', $db = null)
     {
