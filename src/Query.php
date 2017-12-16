@@ -36,7 +36,7 @@ class Query extends Component implements QueryInterface
 
     private $_params = [];
 
-    public $options = [];
+    private $_options = [];
 
     ////////////////////////////
     //// Getter Area ///////////
@@ -114,6 +114,8 @@ class Query extends Component implements QueryInterface
     }
 
     /**
+     * params to be added in bindvar
+     *
      * @return array
      */
     public function getParams(): array
@@ -122,11 +124,21 @@ class Query extends Component implements QueryInterface
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getIndexBy(): string
+    public function getIndexBy()
     {
         return $this->_indexBy;
+    }
+
+    /**
+     * Options to be added in the arango statement
+     *
+     * @return array
+     */
+    public function getOptions(): array
+    {
+        return $this->_options;
     }
 
     ////////////////////////////
@@ -495,6 +507,45 @@ class Query extends Component implements QueryInterface
             }
         }
 
+        return $this;
+    }
+
+    /**
+     * @since 2017-12-16 17:01:07
+     *
+     * @param $options
+     *
+     * @return $this
+     */
+    public function options($options): Query
+    {
+        $this->_options = $options;
+
+        return $this;
+    }
+
+    /**
+     * @since 2017-12-16 17:01:11
+     *
+     * @param $options
+     *
+     * @return $this
+     */
+    public function addOptions($options): Query
+    {
+        if (!empty($options)) {
+            if (empty($this->_options)) {
+                $this->_options = $options;
+            } else {
+                foreach ($options as $name => $value) {
+                    if (is_integer($name)) {
+                        $this->_options[] = $value;
+                    } else {
+                        $this->_options[$name] = $value;
+                    }
+                }
+            }
+        }
         return $this;
     }
 
