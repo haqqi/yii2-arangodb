@@ -6,6 +6,12 @@ use yii\base\Component;
 use yii\base\NotSupportedException;
 use yii\db\QueryInterface;
 
+/**
+ * Class Query
+ * @package haqqi\arangodb
+ *
+ * @property QueryBuilder $builder
+ */
 class Query extends Component implements QueryInterface
 {
     /** @var string Collection id */
@@ -25,7 +31,10 @@ class Query extends Component implements QueryInterface
     /** @var string Index by column */
     private $_indexBy;
 
-    public $params = [];
+    /** @var QueryBuilder */
+    private $_builder;
+
+    private $_params = [];
 
     public $options = [];
 
@@ -89,6 +98,35 @@ class Query extends Component implements QueryInterface
     public function getOrderBy()
     {
         return $this->_orderBy;
+    }
+
+    /**
+     * @since 2017-12-16 10:12:08
+     * @return QueryBuilder
+     */
+    public function getBuilder()
+    {
+        if ($this->_builder === null) {
+            $this->_builder = new QueryBuilder($this);
+        }
+
+        return $this->_builder;
+    }
+
+    /**
+     * @return array
+     */
+    public function getParams(): array
+    {
+        return $this->_params;
+    }
+
+    /**
+     * @return string
+     */
+    public function getIndexBy(): string
+    {
+        return $this->_indexBy;
     }
 
     ////////////////////////////
@@ -420,8 +458,52 @@ class Query extends Component implements QueryInterface
         $this->_indexBy = $column;
     }
 
+    /**
+     * @since 2017-12-16 12:12:57
+     *
+     * @param $params
+     *
+     * @return $this
+     */
+    public function params($params): Query
+    {
+        $this->_params = $params;
+
+        return $this;
+    }
+
+    /**
+     * @since 2017-12-16 12:14:24
+     *
+     * @param $params
+     *
+     * @return Query
+     */
+    public function addParams($params): Query
+    {
+        if (!empty($params)) {
+            if (empty($this->_params)) {
+                $this->_params = $params;
+            } else {
+                foreach ($params as $name => $value) {
+                    if (is_integer($name)) {
+                        $this->_params[] = $value;
+                    } else {
+                        $this->_params[$name] = $value;
+                    }
+                }
+            }
+        }
+
+        return $this;
+    }
+
     /////////////////////////////////////////
     // End of Active Query Area /////////////
+    /////////////////////////////////////////
+
+    /////////////////////////////////////////
+    // Start of query method ////////////////
     /////////////////////////////////////////
 
     public function count($q = '*', $db = null)
@@ -433,7 +515,7 @@ class Query extends Component implements QueryInterface
         $offset  = $this->_offset;
 
         // set it to null
-        $this->_select  = ['_key']; // set to key only
+        $this->_select  = $q; // no need to select anything
         $this->_orderBy = null;
         $this->_limit   = null;
         $this->_offset  = null;
@@ -457,11 +539,15 @@ class Query extends Component implements QueryInterface
 
     public function all($db = null)
     {
-        return $this->getQueryBuilder()->build();
+
     }
 
     public function one($db = null)
     {
         throw new NotSupportedException('one is still not supported.');
     }
+
+    //////////////////////////////////////////
+    /// This is it ///////////////////////////
+    //////////////////////////////////////////
 }
