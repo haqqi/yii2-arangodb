@@ -21,8 +21,8 @@
   "prefer-stable": true,
   "require": {
     "php": ">=7.0",
-    "yiisoft/yii2": ">=2.0.13",
-    "triagens/arangodb": "~3.2"
+    "yiisoft/yii2": ">=2.0.14",
+    "triagens/arangodb": "~3.3"
   },
   "autoload": {
     "psr-4": {
