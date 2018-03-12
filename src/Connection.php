@@ -2,14 +2,17 @@
 
 namespace haqqi\arangodb;
 
+use ArangoDBClient\Collection;
 use ArangoDBClient\CollectionHandler;
 use ArangoDBClient\ConnectionOptions;
 use ArangoDBClient\DocumentHandler;
 use ArangoDBClient\EdgeHandler;
 use ArangoDBClient\Export;
+use ArangoDBClient\GraphHandler;
 use ArangoDBClient\Statement;
 use ArangoDBClient\UpdatePolicy;
 use yii\base\Component;
+use yii\helpers\ArrayHelper;
 
 class Connection extends Component
 {
@@ -31,7 +34,7 @@ class Connection extends Component
         ConnectionOptions::OPTION_AUTH_PASSWD   => '',
         // connection persistence on server. can use either 'Close'
         // (one-time connections) or 'Keep-Alive' (re-used connections)
-        ConnectionOptions::OPTION_CONNECTION    => 'Close',
+        ConnectionOptions::OPTION_CONNECTION    => 'Keep-Alive',
         // connect timeout in seconds
         ConnectionOptions::OPTION_TIMEOUT       => 3,
         // whether or not to reconnect when a keep-alive connection has timed out on server
@@ -48,6 +51,22 @@ class Connection extends Component
     private $_documentHandler = null;
     /** @var null|EdgeHandler $_documentHandler */
     private $_edgeHandler = null;
+    /** @var null|GraphHandler $_graphHandler */
+    private $_graphHandler = null;
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct(array $config = [])
+    {
+        // get from config
+        $connectionOptions = ArrayHelper::getValue($config, 'connectionOptions', []);
+
+        // merge to the new config
+        $config['connectionOptions'] = ArrayHelper::merge($this->connectionOptions, $connectionOptions);
+
+        parent::__construct($config);
+    }
 
     /**
      * @author Haqqi <me@haqqi.net>
@@ -69,6 +88,7 @@ class Connection extends Component
             $this->_collectionHandler = new CollectionHandler($this->_connection);
             $this->_documentHandler   = new DocumentHandler($this->_connection);
             $this->_edgeHandler       = new EdgeHandler($this->_connection);
+            $this->_graphHandler      = new GraphHandler($this->_connection);
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage(), (int) $e->getCode(), $e);
         } finally {
@@ -82,7 +102,7 @@ class Connection extends Component
      *
      * @return CollectionHandler
      */
-    public function getCollectionHandler()
+    public function getCollectionHandler(): CollectionHandler
     {
         return $this->_collectionHandler;
     }
@@ -96,7 +116,7 @@ class Connection extends Component
      * @return \ArangoDBClient\Collection
      * @throws \ArangoDBClient\Exception
      */
-    public function getCollection($collectionId)
+    public function getCollection($collectionId): Collection
     {
         return $this->_collectionHandler->get($collectionId);
     }
@@ -107,7 +127,7 @@ class Connection extends Component
      *
      * @return DocumentHandler
      */
-    public function getDocumentHandler()
+    public function getDocumentHandler(): DocumentHandler
     {
         return $this->_documentHandler;
     }
@@ -118,34 +138,19 @@ class Connection extends Component
      *
      * @return EdgeHandler
      */
-    public function getEdgeHandler()
+    public function getEdgeHandler(): EdgeHandler
     {
         return $this->_edgeHandler;
     }
 
     /**
      * @author Haqqi <me@haqqi.net>
-     * @since 2017-12-12 12:05:02
+     * @since 2018-03-12 4:07 PM
      *
-     * @param array $options
-     *
-     * @return Statement
+     * @return GraphHandler
      */
-    public function getStatement($options = [])
+    public function getGraphHandler(): GraphHandler
     {
-        return new Statement($this->_connection, $options);
-    }
-
-    /**
-     * @author Haqqi <me@haqqi.net>
-     * @since 2017-12-12 12:06:07
-     *
-     * @param array $options
-     *
-     * @return Export
-     */
-    public function getExport($options = [])
-    {
-        return new Export($this->_connection, $options);
+        return $this->_graphHandler;
     }
 }
