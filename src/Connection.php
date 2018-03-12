@@ -14,6 +14,17 @@ use ArangoDBClient\UpdatePolicy;
 use yii\base\Component;
 use yii\helpers\ArrayHelper;
 
+/**
+ * Class Connection
+ * @package haqqi\arangodb
+ *
+ * @property-read CollectionHandler $collectionHandler
+ * @property-read DocumentHandler   $documentHandler
+ * @property-read EdgeHandler       $edgeHandler
+ * @property-read GraphHandler      $graphHandler
+ * @property-read Statement         $statement
+ * @property-read Export            $export
+ */
 class Connection extends Component
 {
     public static $componentName = 'arangodb';
@@ -152,5 +163,31 @@ class Connection extends Component
     public function getGraphHandler(): GraphHandler
     {
         return $this->_graphHandler;
+    }
+
+    /**
+     * @since 2018-03-12 16:36:40
+     *
+     * @param array $options
+     *
+     * @return Statement
+     * @throws \ArangoDBClient\Exception
+     */
+    public function getStatement($options = [])
+    {
+        return new Statement($this->_connection, $options);
+    }
+
+    /**
+     * @since 2018-03-12 16:36:43
+     *
+     * @param array $options
+     *
+     * @return Export
+     * @throws \ArangoDBClient\Exception
+     */
+    public function getExport($options = [])
+    {
+        return new Export($this->_connection, $options);
     }
 }
