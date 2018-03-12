@@ -24,9 +24,18 @@
     "yiisoft/yii2": ">=2.0.14",
     "triagens/arangodb": "~3.3"
   },
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://asset-packagist.org"
+    }
+  ],
   "autoload": {
     "psr-4": {
       "haqqi\\arangodb\\": "src/"
     }
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^6"
   }
 }
