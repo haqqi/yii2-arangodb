@@ -16,4 +16,9 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
             'runtimePath' => __DIR__ . '/runtime'
         ], $config));
     }
+
+    protected function destroyApplication()
+    {
+        \Yii::$app = null;
+    }
 }
