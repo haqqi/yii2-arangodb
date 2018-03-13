@@ -3,6 +3,7 @@
 namespace haqqi\tests\arangodb;
 
 use haqqi\arangodb\Connection;
+use yii\base\InvalidConfigException;
 use yii\console\Application;
 use yii\helpers\ArrayHelper;
 
@@ -33,7 +34,6 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      * @param array $config
      *
      * @return Connection|object
-     * @throws \yii\base\InvalidConfigException
      */
     protected function getConnection($reset = false, $config = [])
     {
@@ -43,8 +43,17 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
         $config = ArrayHelper::merge(require(__DIR__ . '/data/config.php'), $config);
 
-        $this->arangodb = \Yii::createObject($config);
+        try {
+            $this->arangodb = \Yii::createObject($config);
+        } catch (InvalidConfigException $e) {
+
+        }
 
         return $this->arangodb;
+    }
+
+    protected function tearDown()
+    {
+        $this->destroyApplication();
     }
 }
