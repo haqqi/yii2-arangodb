@@ -181,13 +181,14 @@ class Connection extends Component
     /**
      * @since 2018-03-12 16:36:43
      *
+     * @param string|Collection $collection
      * @param array $options
      *
      * @return Export
      * @throws \ArangoDBClient\Exception
      */
-    public function getExport($options = [])
+    public function getExport($collection, $options = [])
     {
-        return new Export($this->_connection, $options);
+        return new Export($this->_connection, $collection, $options);
     }
 }
