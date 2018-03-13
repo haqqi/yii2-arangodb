@@ -19,10 +19,7 @@ class ActiveRecord extends BaseActiveRecord
         // TODO: Implement hasAttribute() method.
     }
 
-    public function getPrimaryKey($asArray = false)
-    {
-        // TODO: Implement getPrimaryKey() method.
-    }
+
 
     public function getOldPrimaryKey($asArray = false)
     {
