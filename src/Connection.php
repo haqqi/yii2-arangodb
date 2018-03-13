@@ -23,7 +23,6 @@ use yii\helpers\ArrayHelper;
  * @property-read EdgeHandler       $edgeHandler
  * @property-read GraphHandler      $graphHandler
  * @property-read Statement         $statement
- * @property-read Export            $export
  */
 class Connection extends Component
 {
@@ -173,7 +172,7 @@ class Connection extends Component
      * @return Statement
      * @throws \ArangoDBClient\Exception
      */
-    public function getStatement($options = [])
+    public function getStatement($options = []): Statement
     {
         return new Statement($this->_connection, $options);
     }
@@ -182,12 +181,12 @@ class Connection extends Component
      * @since 2018-03-12 16:36:43
      *
      * @param string|Collection $collection
-     * @param array $options
+     * @param array             $options
      *
      * @return Export
      * @throws \ArangoDBClient\Exception
      */
-    public function getExport($collection, $options = [])
+    public function getExport($collection, $options = []): Export
     {
         return new Export($this->_connection, $collection, $options);
     }
