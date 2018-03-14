@@ -5,6 +5,7 @@ namespace haqqi\tests\arangodb;
 use ArangoDBClient\CollectionHandler;
 use haqqi\tests\arangodb\data\bridge\ActiveRecord;
 use haqqi\tests\arangodb\data\bridge\Post;
+use haqqi\tests\arangodb\data\bridge\UserProfile;
 
 class ActiveRecordTest extends TestCase
 {
@@ -31,7 +32,9 @@ class ActiveRecordTest extends TestCase
         $this->assertFalse(ActiveRecord::isPrimaryKey(['_key']));
     }
 
-    public function testCollectionName() {
+    public function testCollectionName()
+    {
         $this->assertEquals('`%post`', Post::collectionName());
+        $this->assertEquals('`%user_profile`', UserProfile::collectionName());
     }
 }
