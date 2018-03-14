@@ -2,7 +2,9 @@
 
 namespace haqqi\arangodb;
 
+use ArangoDBClient\ClientException;
 use ArangoDBClient\Document;
+use yii\base\InvalidArgumentException;
 use yii\base\Model;
 use yii\db\ActiveRecordInterface;
 use yii\helpers\Inflector;
@@ -70,12 +72,72 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
 
         // just initiate document if it is null
         if ($this->_document === null) {
-            $this->_document = new Document();
+            $this->_document = new Document([
+                '_validate' => true
+            ]);
         }
     }
 
     public function getPrimaryKey($asArray = false)
     {
         return $this->_document->getId();
+    }
+
+    public function __get($name)
+    {
+        try {
+            return parent::__get($name);
+        } catch (\Exception $e) {
+            // if it catch general php exception, return the document getter
+            return $this->getAttribute($name);
+        }
+    }
+
+    public function __set($name, $value)
+    {
+        try {
+            parent::__set($name, $value);
+        } catch (\Exception $e) {
+            $this->setAttribute($name, $value);
+        }
+    }
+
+    /**
+     * @since 2018-03-14 17:35:26
+     *
+     * @param string $name
+     *
+     * @return mixed
+     */
+    public function getAttribute($name)
+    {
+        return $this->_document->get($name);
+    }
+
+    /**
+     * @since 2018-03-14 17:35:32
+     *
+     * @param string $name
+     * @param mixed  $value
+     */
+    public function setAttribute($name, $value)
+    {
+        try {
+            $this->_document->set($name, $value);
+        } catch (ClientException $e) {
+            throw new InvalidArgumentException('Value must be either boolean, string, number, or text. Cannot be object.');
+        }
+    }
+
+    /**
+     * @since 2018-03-14 17:35:37
+     *
+     * @param string $name
+     *
+     * @return bool
+     */
+    public function hasAttribute($name)
+    {
+        return $this->_document->get($name) !== null;
     }
 }
