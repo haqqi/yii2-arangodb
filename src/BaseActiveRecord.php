@@ -2,9 +2,7 @@
 
 namespace haqqi\arangodb;
 
-use ArangoDBClient\ClientException;
 use ArangoDBClient\Document;
-use yii\base\InvalidArgumentException;
 use yii\base\Model;
 use yii\db\ActiveRecordInterface;
 use yii\helpers\Inflector;
@@ -14,6 +12,8 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
 {
     /** @var Document to hold attribute of the active record */
     private $_document;
+    /** @var array Related object */
+    private $_related = [];
 
     /**
      * @since 2018-03-13 13:04:14
@@ -77,24 +77,5 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
     public function getPrimaryKey($asArray = false)
     {
         return $this->_document->getId();
-    }
-
-    public function hasAttribute($name)
-    {
-        return !\is_null($this->_document->get($name));
-    }
-
-    public function getAttribute($name)
-    {
-        return $this->_document->get($name);
-    }
-
-    public function setAttribute($name, $value)
-    {
-        try {
-            $this->_document->set($name, $value);
-        } catch (ClientException $e) {
-            throw new InvalidArgumentException(\get_class($this) . ' has failed to set attribute.');
-        }
     }
 }
