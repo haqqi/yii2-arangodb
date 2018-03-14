@@ -2,6 +2,7 @@
 
 namespace haqqi\tests\arangodb;
 
+use ArangoDBClient\Collection;
 use ArangoDBClient\CollectionHandler;
 use haqqi\tests\arangodb\data\bridge\ActiveRecord;
 use haqqi\tests\arangodb\data\bridge\Post;
@@ -36,5 +37,12 @@ class ActiveRecordTest extends TestCase
     {
         $this->assertEquals('`%post`', Post::collectionName());
         $this->assertEquals('`%user_profile`', UserProfile::collectionName());
+    }
+    
+    public function testCollectionExistence()
+    {
+        $collection = $this->_collectionHandler->get($this->_collectionName);
+        $this->assertInstanceOf(Collection::class, $collection);
+        $this->assertEquals($this->_collectionName, $collection->getName());
     }
 }

@@ -15,11 +15,11 @@ class ConnectionTest extends TestCase
     {
         $arangodb = $this->getConnection();
 
-        $this->assertTrue($arangodb instanceof Connection);
-        $this->assertTrue($arangodb->collectionHandler instanceof CollectionHandler);
-        $this->assertTrue($arangodb->documentHandler instanceof DocumentHandler);
-        $this->assertTrue($arangodb->edgeHandler instanceof EdgeHandler);
-        $this->assertTrue($arangodb->graphHandler instanceof GraphHandler);
-        $this->assertTrue($arangodb->statement instanceof Statement);
+        $this->assertInstanceOf(Connection::class, $arangodb);
+        $this->assertInstanceOf(CollectionHandler::class, $arangodb->collectionHandler);
+        $this->assertInstanceOf(DocumentHandler::class, $arangodb->documentHandler);
+        $this->assertInstanceOf(EdgeHandler::class, $arangodb->edgeHandler);
+        $this->assertInstanceOf(GraphHandler::class, $arangodb->graphHandler);
+        $this->assertInstanceOf(Statement::class, $arangodb->statement);
     }
 }
