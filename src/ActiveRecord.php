@@ -4,23 +4,6 @@ namespace haqqi\arangodb;
 
 class ActiveRecord extends BaseActiveRecord
 {
-    public function getAttribute($name)
-    {
-        // TODO: Implement getAttribute() method.
-    }
-
-    public function setAttribute($name, $value)
-    {
-        // TODO: Implement setAttribute() method.
-    }
-
-    public function hasAttribute($name)
-    {
-        // TODO: Implement hasAttribute() method.
-    }
-
-
-
     public function getOldPrimaryKey($asArray = false)
     {
         // TODO: Implement getOldPrimaryKey() method.
