@@ -15,18 +15,16 @@ class QueryTest extends TestCase
     public function testQuery()
     {
         $query = new Query();
-        $query->select(["_id", "_key"])
+        $query
+            ->select(["_id", "_key"])
             ->from("post")
-            ->where(["_id" => 'asd'])
-            ->andWhere(["_id" => '1112'])
-            ->andWhere(['OR', ['_id' => '12222'], ['!=', "_id", "44444"]])
-            ->andWhere(['LIKE', 'regex', 'regex']);
+            ->andWhere(['OR', ['_id' => '12222'], ['!=', "_id", "44444"]]);
 
         $build = new QueryBuilder($query);
-        echo $build->build();
         
         // @TODO mas haq, tolong kira" ini outputnya gimana? untuk penyesuaian
-        $raw = "FOR `post` IN `post` RETURN { _id: `post`.`_id`, _key: `post`.`_key`}";
-        $this->assertEquals($raw, $build->build());
+        $raw = "FOR `post` IN `post` FILTER ( `post`.`_id` == @paramWhere0 OR `post`.`_id` != @paramWhere1 ) RETURN { _id: `post`.`_id`, _key: `post`.`_key`}";
+        list($aql, $params) = $build->build();
+        $this->assertEquals($raw, $aql);
     }
 }
