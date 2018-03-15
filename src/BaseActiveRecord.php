@@ -10,6 +10,12 @@ use yii\db\ActiveRecordInterface;
 use yii\helpers\Inflector;
 use yii\helpers\StringHelper;
 
+/**
+ * Class BaseActiveRecord
+ * @package haqqi\arangodb
+ *
+ * @property-read $isNewRecord
+ */
 abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
 {
     /** @var Document to hold attribute of the active record */

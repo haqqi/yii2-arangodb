@@ -50,7 +50,7 @@ class ActiveRecordTest extends TestCase
     public function testIsNewRecord()
     {
         $post = new Post();
-        $this->assertTrue($post->getIsNewRecord());
+        $this->assertTrue($post->isNewRecord);
     }
 
     public function testAddObjectAsAttributeAndProperty()
