@@ -47,21 +47,33 @@ class ActiveRecordTest extends TestCase
         $this->assertEquals($this->_collectionName, $collection->getName());
     }
 
-    public function testSetProperty()
+    public function testIsNewRecord()
     {
         $post = new Post();
-        $post->innerProperty = 'Inner property';
+        $this->assertTrue($post->getIsNewRecord());
+    }
+
+    public function testAddObjectAsAttributeAndProperty()
+    {
+        $post   = new Post();
+        $object = new \stdClass();
+
+        $this->expectException(InvalidArgumentException::class);
+        // set object property
+        $post->setObjectProperty($object);
+        // set object as attribute
+        $post->tryObject = $object;
+    }
+
+    public function testSetProperty()
+    {
+        $post                   = new Post();
+        $post->innerProperty    = 'Inner property';
         $post->documentProperty = 'Document property';
 
         $this->assertEquals('Inner property', $post->innerProperty);
         $this->assertEquals('Document property', $post->documentProperty);
         $this->assertFalse($post->__isset('random'));
         $this->assertTrue($post->__isset('documentProperty'));
-
-        // test add exception
-        $this->expectException(InvalidArgumentException::class);
-        $object = new \stdClass();
-        $post->setObjectProperty($object);
-        $post->tryObject = $object;
     }
 }

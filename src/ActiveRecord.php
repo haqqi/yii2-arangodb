@@ -40,7 +40,7 @@ class ActiveRecord extends BaseActiveRecord
     {
         // TODO: Implement save() method.
     }
-
+    
     public function insert($runValidation = true, $attributes = null)
     {
         // TODO: Implement insert() method.
@@ -54,11 +54,6 @@ class ActiveRecord extends BaseActiveRecord
     public function delete()
     {
         // TODO: Implement delete() method.
-    }
-
-    public function getIsNewRecord()
-    {
-        // TODO: Implement getIsNewRecord() method.
     }
 
     public function equals($record)

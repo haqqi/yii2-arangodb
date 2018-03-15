@@ -151,4 +151,9 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
     {
         return $this->_document->get($name) !== null;
     }
+
+    public function getIsNewRecord()
+    {
+        return $this->_document->getIsNew();
+    }
 }
