@@ -38,6 +38,7 @@ class QueryBuilder extends BaseObject
 
         $clauses = [
             $this->buildFrom(),
+            $this->buildWhere(),
             $this->buildOrderBy(),
             $this->buildLimit(),
             $this->buildSelect()
@@ -66,6 +67,13 @@ class QueryBuilder extends BaseObject
         $asName         = $this->quoteName($asName);
 
         return $collectionName ? "FOR $asName IN $collectionName" : '';
+    }
+    
+    protected function buildWhere()
+    {
+        var_dump($this->_query->getWhere());
+        $condition = "";
+        return $condition === "" ? "" : "FILTER " . $condition; 
     }
 
     /**
