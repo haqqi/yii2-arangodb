@@ -120,7 +120,7 @@ class QueryBuilder extends BaseObject
         $columns = $this->_query->getSelect();
 
         if ($columns === null || empty($columns)) {
-            return 'RETURN ' . $this->_query->getAs();
+            return 'RETURN ' . $this->quoteName($this->_query->getAs());
         }
 
         if (!is_array($columns)) {
