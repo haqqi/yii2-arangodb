@@ -55,6 +55,8 @@ class ActiveRecordTest extends TestCase
 
         $this->assertEquals('Inner property', $post->innerProperty);
         $this->assertEquals('Document property', $post->documentProperty);
+        $this->assertFalse($post->__isset('random'));
+        $this->assertTrue($post->__isset('documentProperty'));
 
         // test add exception
         $this->expectException(InvalidArgumentException::class);
