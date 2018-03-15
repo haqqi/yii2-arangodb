@@ -3,6 +3,7 @@
 namespace haqqi\arangodb;
 
 use yii\base\BaseObject;
+use yii\base\InvalidArgumentException;
 
 class QueryBuilder extends BaseObject
 {
@@ -71,9 +72,39 @@ class QueryBuilder extends BaseObject
     
     protected function buildWhere()
     {
-        var_dump($this->_query->getWhere());
-        $condition = "";
+        $where = $this->_query->getWhere();
+        var_dump($where);
+        if (is_array($where)) {
+            $condition = $this->createWhereFromArray($where);
+        } else if (is_string($where)) {
+            $condition = $where;
+        } else {
+            throw new InvalidArgumentException("Where arguments only support string and array");
+        }
+
         return $condition === "" ? "" : "FILTER " . $condition; 
+    }
+    
+    protected function createWhereFromArray($condition)
+    {
+        // array [ operator, field, value ] 
+        if (isset($condition[0])) {
+            $operator = strtoupper(array_shift($condition));
+            if (in_array($operator, ['AND', 'OR'])) {
+                $pieces = [];
+                foreach ($condition as $piece) {
+                    $pieces[] = $this->createWhereFromArray($piece);
+                }
+
+                return "( " . implode(" {$operator} ", $pieces) . " )";
+            } else {
+                return $condition[0] . " " . $operator . " " . $condition[1];
+            }
+        }
+
+        // [ field => value ]
+        $field = array_keys($condition);
+        return $field[0] . " == " . $condition[$field[0]];
     }
 
     /**
