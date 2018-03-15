@@ -48,8 +48,9 @@ class QueryBuilder extends BaseObject
         $clauses = \array_filter($clauses);
 
         $aql = \implode($this->separator, $clauses);
+        $params = $this->_whereParams;
 
-        return $aql;
+        return [$aql, $params];
     }
 
     /**
@@ -72,8 +73,9 @@ class QueryBuilder extends BaseObject
     
     protected function buildWhere()
     {
+        // reset just in case
+        $this->_whereParams = [];
         $where = $this->_query->getWhere();
-        var_dump($where);
         if (is_array($where)) {
             $condition = $this->createWhereFromArray($where);
         } else if (is_string($where)) {
@@ -98,13 +100,27 @@ class QueryBuilder extends BaseObject
 
                 return "( " . implode(" {$operator} ", $pieces) . " )";
             } else {
-                return $condition[0] . " " . $operator . " " . $condition[1];
+                $field = $this->normalizeColumnName($condition[0]);
+                $value = $this->createParamValue($condition[1]);
+                return $field . " " . $operator . " " . $value;
             }
         }
 
-        // [ field => value ]
-        $field = array_keys($condition);
-        return $field[0] . " == " . $condition[$field[0]];
+        // array [ field => value ]
+        $rawField = array_keys($condition);
+        $field = $this->normalizeColumnName($rawField[0]);
+        $value = $this->createParamValue($condition[$rawField[0]]);
+        return $field . " == " . $value;
+    }
+    
+    private $_whereParams = [];
+    protected function createParamValue($value)
+    {
+        $number = count($this->_whereParams);
+        $paramName = "@paramWhere{$number}";
+        $this->_whereParams[$paramName] = $value;
+
+        return $paramName;
     }
 
     /**
@@ -204,6 +220,20 @@ class QueryBuilder extends BaseObject
         }
 
         return \sprintf('`%s`', $name);
+    }
+    
+    protected function quoteValue($value)
+    {
+        if (is_null($value)) {
+            return "null";
+        }
+
+        if (!is_string($value)) {
+            return $value;
+        }
+        
+        $value = addslashes($value);
+        return \sprintf('"%s"', $value);
     }
 
     protected function normalizeColumnName($name)
