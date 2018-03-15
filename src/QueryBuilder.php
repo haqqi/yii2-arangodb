@@ -3,6 +3,7 @@
 namespace haqqi\arangodb;
 
 use yii\base\BaseObject;
+use yii\base\InvalidArgumentException;
 
 class QueryBuilder extends BaseObject
 {
@@ -38,6 +39,7 @@ class QueryBuilder extends BaseObject
 
         $clauses = [
             $this->buildFrom(),
+            $this->buildWhere(),
             $this->buildOrderBy(),
             $this->buildLimit(),
             $this->buildSelect()
@@ -46,8 +48,9 @@ class QueryBuilder extends BaseObject
         $clauses = \array_filter($clauses);
 
         $aql = \implode($this->separator, $clauses);
+        $params = $this->_whereParams;
 
-        return $aql;
+        return [$aql, $params];
     }
 
     /**
@@ -67,6 +70,58 @@ class QueryBuilder extends BaseObject
 
         return $collectionName ? "FOR $asName IN $collectionName" : '';
     }
+    
+    protected function buildWhere()
+    {
+        // reset just in case
+        $this->_whereParams = [];
+        $where = $this->_query->getWhere();
+        if (is_array($where)) {
+            $condition = $this->createWhereFromArray($where);
+        } else if (is_string($where)) {
+            $condition = $where;
+        } else {
+            throw new InvalidArgumentException("Where arguments only support string and array");
+        }
+
+        return $condition === "" ? "" : "FILTER " . $condition; 
+    }
+    
+    protected function createWhereFromArray($condition)
+    {
+        // array [ operator, field, value ] 
+        if (isset($condition[0])) {
+            $operator = strtoupper(array_shift($condition));
+            if (in_array($operator, ['AND', 'OR'])) {
+                $pieces = [];
+                foreach ($condition as $piece) {
+                    $pieces[] = $this->createWhereFromArray($piece);
+                }
+
+                return "( " . implode(" {$operator} ", $pieces) . " )";
+            } else {
+                $field = $this->normalizeColumnName($condition[0]);
+                $value = $this->createParamValue($condition[1]);
+                return $field . " " . $operator . " " . $value;
+            }
+        }
+
+        // array [ field => value ]
+        $rawField = array_keys($condition);
+        $field = $this->normalizeColumnName($rawField[0]);
+        $value = $this->createParamValue($condition[$rawField[0]]);
+        return $field . " == " . $value;
+    }
+    
+    private $_whereParams = [];
+    protected function createParamValue($value)
+    {
+        $number = count($this->_whereParams);
+        $paramName = "@paramWhere{$number}";
+        $this->_whereParams[$paramName] = $value;
+
+        return $paramName;
+    }
 
     /**
      * @since 2017-12-12 19:31:52
@@ -81,7 +136,7 @@ class QueryBuilder extends BaseObject
         $columns = $this->_query->getSelect();
 
         if ($columns === null || empty($columns)) {
-            return 'RETURN ' . $this->_query->getAs();
+            return 'RETURN ' . $this->quoteName($this->_query->getAs());
         }
 
         if (!is_array($columns)) {
@@ -165,6 +220,20 @@ class QueryBuilder extends BaseObject
         }
 
         return \sprintf('`%s`', $name);
+    }
+    
+    protected function quoteValue($value)
+    {
+        if (is_null($value)) {
+            return "null";
+        }
+
+        if (!is_string($value)) {
+            return $value;
+        }
+        
+        $value = addslashes($value);
+        return \sprintf('"%s"', $value);
     }
 
     protected function normalizeColumnName($name)
