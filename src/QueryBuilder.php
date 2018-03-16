@@ -112,7 +112,7 @@ class QueryBuilder extends BaseObject
         $value = $this->createParamValue($condition[$rawField[0]]);
         return $field . " == " . $value;
     }
-    
+
     private $_whereParams = [];
     protected function createParamValue($value)
     {
