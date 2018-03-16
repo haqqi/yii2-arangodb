@@ -74,14 +74,19 @@ class QueryBuilder extends BaseObject
     protected function buildWhere()
     {
         // reset just in case
+        $condition = "";
         $this->_whereParams = [];
         $where = $this->_query->getWhere();
-        if (is_array($where)) {
-            $condition = $this->createWhereFromArray($where);
-        } else if (is_string($where)) {
-            $condition = $where;
-        } else {
-            throw new InvalidArgumentException("Where arguments only support string and array");
+        
+        
+        if (!empty($where)) {
+            if (is_array($where)) {
+                $condition = $this->createWhereFromArray($where);
+            } else if (is_string($where)) {
+                $condition = $where;
+            } else {
+                throw new InvalidArgumentException("Where arguments only support string and array");
+            }
         }
 
         return $condition === "" ? "" : "FILTER " . $condition; 
@@ -117,10 +122,10 @@ class QueryBuilder extends BaseObject
     protected function createParamValue($value)
     {
         $number = count($this->_whereParams);
-        $paramName = "@paramWhere{$number}";
+        $paramName = "paramWhere{$number}";
         $this->_whereParams[$paramName] = $value;
 
-        return $paramName;
+        return "@" . $paramName;
     }
 
     /**
