@@ -2,9 +2,12 @@
 
 namespace haqqi\arangodb;
 
+use ArangoDBClient\Cursor;
+use ArangoDBClient\Statement;
 use yii\base\Component;
 use yii\base\NotSupportedException;
 use yii\db\QueryInterface;
+use yii\helpers\ArrayHelper;
 
 /**
  * Class Query
@@ -590,12 +593,29 @@ class Query extends Component implements QueryInterface
 
     public function all($db = null)
     {
-
+        $command = $this->createCommand($db);
+        return $command->getAll();
     }
 
     public function one($db = null)
     {
-        throw new NotSupportedException('one is still not supported.');
+        return ArrayHelper::getValue( $this->all($db), 0, []);
+    }
+    
+    public function createCommand($db = null): Cursor
+    {
+        if (is_null($db)) {
+            $db = \Yii::$app->arangodb;
+        }
+        
+        $queryBuilder = new QueryBuilder($this);
+        list($aql, $params) = $queryBuilder->build();
+        $query = $db->getStatement([
+            Statement::ENTRY_QUERY => $aql,
+            Statement::ENTRY_BINDVARS => $params
+        ]);
+        
+        return $query->execute();
     }
 
     //////////////////////////////////////////
