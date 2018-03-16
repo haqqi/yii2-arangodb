@@ -40,11 +40,6 @@ class ActiveRecord extends BaseActiveRecord
     {
         // TODO: Implement save() method.
     }
-    
-    public function insert($runValidation = true, $attributes = null)
-    {
-        // TODO: Implement insert() method.
-    }
 
     public function update($runValidation = true, $attributeNames = null)
     {

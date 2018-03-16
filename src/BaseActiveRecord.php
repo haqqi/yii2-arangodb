@@ -4,6 +4,7 @@ namespace haqqi\arangodb;
 
 use ArangoDBClient\ClientException;
 use ArangoDBClient\Document;
+use ArangoDBClient\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\Model;
 use yii\db\ActiveRecordInterface;
@@ -34,7 +35,8 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
 
     public static function collectionName()
     {
-        return '`%' . Inflector::camel2id(StringHelper::basename(get_called_class()), '_') . '`';
+        // @todo: create format for prefix
+        return Inflector::camel2id(StringHelper::basename(get_called_class()), '_');
     }
 
     /**
@@ -158,8 +160,43 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
         return $this->_document->get($name) !== null;
     }
 
+    /**
+     * Returns a value indicating whether the current record is new.
+     * @return bool whether the record is new and should be inserted when calling [[save()]].
+     */
     public function getIsNewRecord()
     {
         return $this->_document->getIsNew();
+    }
+
+    /**
+     * @since 2018-03-16 13:14:46
+     *
+     * @param bool $runValidation
+     * @param null $attributes
+     *
+     * @return bool
+     * @throws \yii\base\Exception
+     */
+    public function insert($runValidation = true, $attributes = null)
+    {
+        if ($runValidation && !$this->validate($attributes)) {
+            \Yii::info(\get_called_class() . ' not inserted due to validation error.', __METHOD__);
+            return false;
+        }
+
+        // note: because ArangoDB transaction is using fully js, it is not supported
+        // in Active Record. https://docs.arangodb.com/3.3/Manual/Transactions/
+
+        // @todo: prepare event before save
+
+        try {
+            $documentHandler = static::getDb()->documentHandler;
+            $documentHandler->save(static::collectionName(), $this->_document);
+        } catch (Exception $e) {
+            throw new \yii\base\Exception($e->getMessage());
+        }
+
+        // @todo: prepare event after save
     }
 }

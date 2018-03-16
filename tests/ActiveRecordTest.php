@@ -36,8 +36,8 @@ class ActiveRecordTest extends TestCase
 
     public function testCollectionName()
     {
-        $this->assertEquals('`%post`', Post::collectionName());
-        $this->assertEquals('`%user_profile`', UserProfile::collectionName());
+        $this->assertEquals('post', Post::collectionName());
+        $this->assertEquals('user_profile', UserProfile::collectionName());
     }
 
     public function testCollectionExistence()
@@ -75,5 +75,21 @@ class ActiveRecordTest extends TestCase
         $this->assertEquals('Document property', $post->documentProperty);
         $this->assertFalse($post->__isset('random'));
         $this->assertTrue($post->__isset('documentProperty'));
+    }
+
+    public function testInsert() {
+        Post::$db = $this->getConnection();
+
+        $post = new Post();
+
+        // no primary key at beginning
+        $this->assertNull($post->getPrimaryKey());
+
+        $post->innerProperty = 'Just inner property';
+        $post->title = 'Just a title';
+        $post->insert();
+
+        // primary key as string
+        $this->assertTrue(\is_string($post->getPrimaryKey()));
     }
 }
