@@ -23,6 +23,7 @@ use yii\helpers\ArrayHelper;
  * @property-read EdgeHandler       $edgeHandler
  * @property-read GraphHandler      $graphHandler
  * @property-read Statement         $statement
+ * @property-read bool              $isActive
  */
 class Connection extends Component
 {
@@ -189,5 +190,10 @@ class Connection extends Component
     public function getExport($collection, $options = []): Export
     {
         return new Export($this->_connection, $collection, $options);
+    }
+
+    public function getIsActive()
+    {
+        return $this->_connection->test();
     }
 }

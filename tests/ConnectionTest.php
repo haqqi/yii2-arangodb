@@ -15,6 +15,7 @@ class ConnectionTest extends TestCase
     {
         $arangodb = $this->getConnection();
 
+        $this->assertTrue($arangodb->isActive);
         $this->assertInstanceOf(Connection::class, $arangodb);
         $this->assertInstanceOf(CollectionHandler::class, $arangodb->collectionHandler);
         $this->assertInstanceOf(DocumentHandler::class, $arangodb->documentHandler);
