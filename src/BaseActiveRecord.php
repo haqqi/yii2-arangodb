@@ -10,6 +10,12 @@ use yii\db\ActiveRecordInterface;
 use yii\helpers\Inflector;
 use yii\helpers\StringHelper;
 
+/**
+ * Class BaseActiveRecord
+ * @package haqqi\arangodb
+ *
+ * @property-read $isNewRecord
+ */
 abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
 {
     /** @var Document to hold attribute of the active record */
@@ -89,6 +95,7 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
             return parent::__get($name);
         } catch (\Exception $e) {
             // if it catch general php exception, return the document getter
+            // @todo: get the related first
             return $this->getAttribute($name);
         }
     }
@@ -98,7 +105,17 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
         try {
             parent::__set($name, $value);
         } catch (\Exception $e) {
+            // @todo: set the related first
             $this->setAttribute($name, $value);
+        }
+    }
+
+    public function __isset($name)
+    {
+        try {
+            return $this->__get($name) !== null;
+        } catch (\Exception $e) {
+            return false;
         }
     }
 
@@ -139,5 +156,10 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
     public function hasAttribute($name)
     {
         return $this->_document->get($name) !== null;
+    }
+
+    public function getIsNewRecord()
+    {
+        return $this->_document->getIsNew();
     }
 }
