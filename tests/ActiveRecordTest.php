@@ -40,6 +40,9 @@ class ActiveRecordTest extends TestCase
     {
         $this->assertEquals($this->_collectionName, Post::collectionNamePrefixed());
         $this->assertEquals('user_profile', UserProfile::collectionNamePrefixed());
+
+        $this->getConnection()->collectionPrefix = 'hq_';
+        $this->assertEquals('hq_' . $this->_collectionName, Post::collectionNamePrefixed());
     }
 
     public function testCollectionExistence()
