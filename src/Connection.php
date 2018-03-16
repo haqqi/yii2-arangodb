@@ -65,6 +65,8 @@ class Connection extends Component
     /** @var null|GraphHandler $_graphHandler */
     private $_graphHandler = null;
 
+    public $collectionPrefix = '';
+
     /**
      * @inheritdoc
      */
@@ -195,5 +197,10 @@ class Connection extends Component
     public function getIsActive()
     {
         return $this->_connection->test();
+    }
+
+    public function replaceCollectionPrefix($collectionPrefix)
+    {
+        return \str_replace('%', $this->collectionPrefix, $collectionPrefix);
     }
 }

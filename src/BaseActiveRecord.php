@@ -36,7 +36,12 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
     public static function collectionName()
     {
         // @todo: create format for prefix
-        return Inflector::camel2id(StringHelper::basename(get_called_class()), '_');
+        return '%' . Inflector::camel2id(StringHelper::basename(get_called_class()), '_');
+    }
+
+    public static function collectionNamePrefixed()
+    {
+        return static::getDb()->replaceCollectionPrefix(static::collectionName());
     }
 
     /**
@@ -192,7 +197,7 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
 
         try {
             $documentHandler = static::getDb()->documentHandler;
-            $documentHandler->save(static::collectionName(), $this->_document);
+            $documentHandler->save(static::collectionNamePrefixed(), $this->_document);
         } catch (Exception $e) {
             throw new \yii\base\Exception($e->getMessage());
         }

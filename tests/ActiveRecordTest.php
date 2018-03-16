@@ -18,6 +18,8 @@ class ActiveRecordTest extends TestCase
 
     protected function setUp()
     {
+        ActiveRecord::$db = $this->getConnection();
+
         $this->_collectionHandler = $this->getConnection()->collectionHandler;
 
         // reset collection
@@ -36,8 +38,8 @@ class ActiveRecordTest extends TestCase
 
     public function testCollectionName()
     {
-        $this->assertEquals('post', Post::collectionName());
-        $this->assertEquals('user_profile', UserProfile::collectionName());
+        $this->assertEquals($this->_collectionName, Post::collectionNamePrefixed());
+        $this->assertEquals('user_profile', UserProfile::collectionNamePrefixed());
     }
 
     public function testCollectionExistence()
@@ -77,16 +79,15 @@ class ActiveRecordTest extends TestCase
         $this->assertTrue($post->__isset('documentProperty'));
     }
 
-    public function testInsert() {
-        Post::$db = $this->getConnection();
-
+    public function testInsert()
+    {
         $post = new Post();
 
         // no primary key at beginning
         $this->assertNull($post->getPrimaryKey());
 
         $post->innerProperty = 'Just inner property';
-        $post->title = 'Just a title';
+        $post->title         = 'Just a title';
         $post->insert();
 
         // primary key as string
