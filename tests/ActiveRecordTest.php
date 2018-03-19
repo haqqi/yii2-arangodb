@@ -58,42 +58,42 @@ class ActiveRecordTest extends TestCase
         $this->assertTrue($post->isNewRecord);
     }
 
-    public function testAddObjectAsAttributeAndProperty()
-    {
-        $post   = new Post();
-        $object = new \stdClass();
-
-        $this->expectException(InvalidArgumentException::class);
-        // set object property
-        $post->setObjectProperty($object);
-        // set object as attribute
-        $post->tryObject = $object;
-    }
-
-    public function testSetProperty()
-    {
-        $post                   = new Post();
-        $post->innerProperty    = 'Inner property';
-        $post->documentProperty = 'Document property';
-
-        $this->assertEquals('Inner property', $post->innerProperty);
-        $this->assertEquals('Document property', $post->documentProperty);
-        $this->assertFalse($post->__isset('random'));
-        $this->assertTrue($post->__isset('documentProperty'));
-    }
-
-    public function testInsert()
-    {
-        $post = new Post();
-
-        // no primary key at beginning
-        $this->assertNull($post->getPrimaryKey());
-
-        $post->innerProperty = 'Just inner property';
-        $post->title         = 'Just a title';
-        $post->insert();
-
-        // primary key as string
-        $this->assertTrue(\is_string($post->getPrimaryKey()));
-    }
+//    public function testAddObjectAsAttributeAndProperty()
+//    {
+//        $post   = new Post();
+//        $object = new \stdClass();
+//
+//        $this->expectException(InvalidArgumentException::class);
+//        // set object property
+//        $post->setObjectProperty($object);
+//        // set object as attribute
+//        $post->tryObject = $object;
+//    }
+//
+//    public function testSetProperty()
+//    {
+//        $post                   = new Post();
+//        $post->innerProperty    = 'Inner property';
+//        $post->documentProperty = 'Document property';
+//
+//        $this->assertEquals('Inner property', $post->innerProperty);
+//        $this->assertEquals('Document property', $post->documentProperty);
+//        $this->assertFalse($post->__isset('random'));
+//        $this->assertTrue($post->__isset('documentProperty'));
+//    }
+//
+//    public function testInsert()
+//    {
+//        $post = new Post();
+//
+//        // no primary key at beginning
+//        $this->assertNull($post->getPrimaryKey());
+//
+//        $post->innerProperty = 'Just inner property';
+//        $post->title         = 'Just a title';
+//        $post->insert();
+//
+//        // primary key as string
+//        $this->assertTrue(\is_string($post->getPrimaryKey()));
+//    }
 }

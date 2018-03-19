@@ -98,6 +98,26 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
     }
 
     /**
+     * Initializes the object.
+     * This method is called at the end of the constructor.
+     * The default implementation will trigger an [[EVENT_INIT]] event.
+     */
+    public function init()
+    {
+        parent::init();
+        $this->trigger(self::EVENT_INIT);
+    }
+
+    /**
+     * Returns a value indicating whether the current record is new.
+     * @return bool whether the record is new and should be inserted when calling [[save()]].
+     */
+    public function getIsNewRecord()
+    {
+        return $this->_document === null;
+    }
+
+    /**
      * Only _id is the primary key
      *
      * @since 2018-03-13 13:49:42
@@ -130,18 +150,6 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
         }
 
         return true;
-    }
-
-    public function __construct(array $config = [])
-    {
-        parent::__construct($config);
-
-        // just initiate document if it is null
-        if ($this->_document === null) {
-            $this->_document = new Document([
-                '_validate' => true
-            ]);
-        }
     }
 
     public function getPrimaryKey($asArray = false)
@@ -216,15 +224,6 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
     public function hasAttribute($name)
     {
         return $this->_document->get($name) !== null;
-    }
-
-    /**
-     * Returns a value indicating whether the current record is new.
-     * @return bool whether the record is new and should be inserted when calling [[save()]].
-     */
-    public function getIsNewRecord()
-    {
-        return $this->_document->getIsNew();
     }
 
     /**
