@@ -4,13 +4,6 @@ namespace haqqi\arangodb;
 
 class ActiveRecord extends BaseActiveRecord
 {
-
-
-    public function getOldPrimaryKey($asArray = false)
-    {
-        // TODO: Implement getOldPrimaryKey() method.
-    }
-
     public static function find()
     {
         // TODO: Implement find() method.
@@ -49,21 +42,6 @@ class ActiveRecord extends BaseActiveRecord
     public function delete()
     {
         // TODO: Implement delete() method.
-    }
-
-    public function equals($record)
-    {
-        // TODO: Implement equals() method.
-    }
-
-    public function getRelation($name, $throwException = true)
-    {
-        // TODO: Implement getRelation() method.
-    }
-
-    public function populateRelation($name, $records)
-    {
-        // TODO: Implement populateRelation() method.
     }
 
     public function link($name, $model, $extraColumns = [])

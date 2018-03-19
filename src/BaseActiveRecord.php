@@ -8,6 +8,7 @@ use ArangoDBClient\Exception;
 use ArangoDBClient\ValueValidator;
 use yii\base\InvalidArgumentException;
 use yii\base\Model;
+use yii\base\UnknownMethodException;
 use yii\base\UnknownPropertyException;
 use yii\db\ActiveQueryInterface;
 use yii\db\ActiveRecordInterface;
@@ -176,6 +177,11 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
         return $this->getIsNewRecord() ? null : $this->_document->getId();
     }
 
+    public function getOldPrimaryKey($asArray = false)
+    {
+        return $this->getPrimaryKey($asArray);
+    }
+
     public function __get($name)
     {
         try {
@@ -294,6 +300,107 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
         }
 
         // @todo: prepare event after save
+    }
+
+    /**
+     * @done
+     * Returns the relation object with the specified name.
+     * A relation is defined by a getter method which returns an [[ActiveQueryInterface]] object.
+     * It can be declared in either the Active Record class itself or one of its behaviors.
+     *
+     * @param string $name the relation name, e.g. `orders` for a relation defined via `getOrders()` method
+     *     (case-sensitive).
+     * @param bool   $throwException whether to throw exception if the relation does not exist.
+     *
+     * @return ActiveQueryInterface|ActiveQuery the relational query object. If the relation does not exist
+     * and `$throwException` is `false`, `null` will be returned.
+     * @throws InvalidArgumentException if the named relation does not exist.
+     * @throws \ReflectionException
+     */
+    public function getRelation($name, $throwException = true)
+    {
+        $getter = 'get' . $name;
+        try {
+            // the relation could be defined in a behavior
+            $relation = $this->$getter();
+        } catch (UnknownMethodException $e) {
+            if ($throwException) {
+                throw new InvalidArgumentException(get_class($this) . ' has no relation named "' . $name . '".', 0, $e);
+            }
+
+            return null;
+        }
+        if (!$relation instanceof ActiveQueryInterface) {
+            if ($throwException) {
+                throw new InvalidArgumentException(get_class($this) . ' has no relation named "' . $name . '".');
+            }
+
+            return null;
+        }
+
+        if (method_exists($this, $getter)) {
+            // relation name is case sensitive, trying to validate it when the relation is defined within this class
+            $method   = new \ReflectionMethod($this, $getter);
+            $realName = lcfirst(substr($method->getName(), 3));
+            if ($realName !== $name) {
+                if ($throwException) {
+                    throw new InvalidArgumentException('Relation names are case sensitive. ' . get_class($this) . " has a relation named \"$realName\" instead of \"$name\".");
+                }
+
+                return null;
+            }
+        }
+
+        return $relation;
+    }
+
+    /**
+     * Populates the named relation with the related records.
+     * Note that this method does not check if the relation exists or not.
+     * @param string $name the relation name, e.g. `orders` for a relation defined via `getOrders()` method (case-sensitive).
+     * @param ActiveRecordInterface|array|null $records the related records to be populated into the relation.
+     * @see getRelation()
+     */
+    public function populateRelation($name, $records)
+    {
+        $this->_related[$name] = $records;
+    }
+
+    /**
+     * Check whether the named relation has been populated with records.
+     * @param string $name the relation name, e.g. `orders` for a relation defined via `getOrders()` method (case-sensitive).
+     * @return bool whether relation has been populated with records.
+     * @see getRelation()
+     */
+    public function isRelationPopulated($name)
+    {
+        return array_key_exists($name, $this->_related);
+    }
+
+    /**
+     * Returns all populated related records.
+     * @return array an array of related records indexed by relation names.
+     * @see getRelation()
+     */
+    public function getRelatedRecords()
+    {
+        return $this->_related;
+    }
+
+    /**
+     * Returns a value indicating whether the given active record is the same as the current one.
+     * The comparison is made by comparing the table names and the primary key values of the two active records.
+     * If one of the records [[isNewRecord|is new]] they are also considered not equal.
+     * @param ActiveRecordInterface $record record to compare to
+     * @return bool whether the two active records refer to the same row in the same database table.
+     */
+    public function equals($record)
+    {
+        if ($this->getIsNewRecord() || $record->getIsNewRecord()) {
+            return false;
+        }
+
+        return get_class($this) === get_class($record) && $this->getPrimaryKey() === $record->getPrimaryKey();
     }
 
     /**
