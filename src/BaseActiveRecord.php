@@ -5,8 +5,11 @@ namespace haqqi\arangodb;
 use ArangoDBClient\ClientException;
 use ArangoDBClient\Document;
 use ArangoDBClient\Exception;
+use ArangoDBClient\ValueValidator;
 use yii\base\InvalidArgumentException;
 use yii\base\Model;
+use yii\base\UnknownPropertyException;
+use yii\db\ActiveQueryInterface;
 use yii\db\ActiveRecordInterface;
 use yii\helpers\Inflector;
 use yii\helpers\StringHelper;
@@ -176,20 +179,28 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
     public function __get($name)
     {
         try {
-            return parent::__get($name);
-        } catch (\Exception $e) {
-            // if it catch general php exception, return the document getter
-            // @todo: get the related first
+            $value = parent::__get($name);
+            if ($value instanceof ActiveQueryInterface) {
+                $this->setRelationDependencies($name, $value);
+                return $this->_related[$name] = $value->findFor($name, $this);
+            }
+            return $value;
+        } catch (UnknownPropertyException $e) {
             return $this->getAttribute($name);
         }
     }
 
+    /**
+     * @since 2018-03-19 09:51:17
+     *
+     * @param string $name
+     * @param mixed  $value
+     */
     public function __set($name, $value)
     {
         try {
             parent::__set($name, $value);
-        } catch (\Exception $e) {
-            // @todo: set the related first
+        } catch (UnknownPropertyException $e) {
             $this->setAttribute($name, $value);
         }
     }
@@ -228,10 +239,17 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
      */
     public function setAttribute($name, $value)
     {
-        if (!empty($this->_relationsDependencies[$name])) {
-            $this->resetDependentRelations($name);
+        try {
+            ValueValidator::validate($value);
+
+            if (!empty($this->_relationsDependencies[$name])) {
+                $this->resetDependentRelations($name);
+            }
+
+            $this->_attributes[$name] = $value;
+        } catch (ClientException $e) {
+            throw new InvalidArgumentException($e->getMessage());
         }
-        $this->_attributes[$name] = $value;
     }
 
     /**
@@ -280,6 +298,7 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
 
     /**
      * Resets dependent related models checking if their links contain specific attribute.
+     *
      * @param string $attribute The changed attribute name.
      */
     private function resetDependentRelations($attribute)
@@ -288,5 +307,25 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
             unset($this->_related[$relation]);
         }
         unset($this->_relationsDependencies[$attribute]);
+    }
+
+    /**
+     * Sets relation dependencies for a property
+     *
+     * @param string               $name property name
+     * @param ActiveQueryInterface $relation relation instance
+     */
+    private function setRelationDependencies($name, $relation)
+    {
+        if (empty($relation->via) && $relation->link) {
+            foreach ($relation->link as $attribute) {
+                $this->_relationsDependencies[$attribute][$name] = $name;
+            }
+        } elseif ($relation->via instanceof ActiveQueryInterface) {
+            $this->setRelationDependencies($name, $relation->via);
+        } elseif (is_array($relation->via)) {
+            list(, $viaQuery) = $relation->via;
+            $this->setRelationDependencies($name, $viaQuery);
+        }
     }
 }

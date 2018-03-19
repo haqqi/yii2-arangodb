@@ -6,7 +6,8 @@ namespace haqqi\tests\arangodb\data\bridge;
  * Class Post
  * @package haqqi\tests\arangodb\data\bridge
  *
- * @property string $innerProperty
+ * @property string    $innerProperty
+ * @property \stdClass $objectProperty
  */
 class Post extends ActiveRecord
 {
