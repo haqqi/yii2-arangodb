@@ -21,6 +21,6 @@ class QueryTest extends TestCase
             ->andWhere(['OR', ['name' => "O'larys"], ['==', "name", "123"]]);
 
         // because there's no data can be query
-        $this->assertEmpty($query->one($this->getConnection()));
+        $this->assertNull($query->one($this->getConnection()));
     }
 }

@@ -638,7 +638,12 @@ class Query extends Component implements QueryInterface
      */
     public function one($db = null)
     {
-        return ArrayHelper::getValue( $this->all($db), 0, []);
+        $data = $this->all($db);
+        if (is_array($data)) {
+            return ArrayHelper::getValue($data, 0);
+        }
+        
+        return null;
     }
     
     public function createCommand($db = null): Cursor
