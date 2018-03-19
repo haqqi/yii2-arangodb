@@ -204,18 +204,23 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
     }
 
     /**
-     * @since 2018-03-14 17:35:26
+     * @done
+     * Returns the named attribute value.
+     * If this record is the result of a query and the attribute is not loaded,
+     * `null` will be returned.
      *
-     * @param string $name
+     * @param string $name the attribute name
      *
-     * @return mixed
+     * @return mixed the attribute value. `null` if the attribute is not set or does not exist.
+     * @see hasAttribute()
      */
     public function getAttribute($name)
     {
-        return $this->_document->get($name);
+        return isset($this->_attributes[$name]) ? $this->_attributes[$name] : null;
     }
 
     /**
+     * @done
      * @since 2018-03-14 17:35:32
      *
      * @param string $name
@@ -223,14 +228,14 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
      */
     public function setAttribute($name, $value)
     {
-        try {
-            $this->_document->set($name, $value);
-        } catch (ClientException $e) {
-            throw new InvalidArgumentException('Value must be either boolean, string, number, or text. Cannot be object.');
+        if (!empty($this->_relationsDependencies[$name])) {
+            $this->resetDependentRelations($name);
         }
+        $this->_attributes[$name] = $value;
     }
 
     /**
+     * @done
      * @since 2018-03-14 17:35:37
      *
      * @param string $name
@@ -239,7 +244,7 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
      */
     public function hasAttribute($name)
     {
-        return $this->_document->get($name) !== null;
+        return isset($this->_attributes[$name]);
     }
 
     /**
@@ -271,5 +276,17 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
         }
 
         // @todo: prepare event after save
+    }
+
+    /**
+     * Resets dependent related models checking if their links contain specific attribute.
+     * @param string $attribute The changed attribute name.
+     */
+    private function resetDependentRelations($attribute)
+    {
+        foreach ($this->_relationsDependencies[$attribute] as $relation) {
+            unset($this->_related[$relation]);
+        }
+        unset($this->_relationsDependencies[$attribute]);
     }
 }

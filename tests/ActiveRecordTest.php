@@ -64,6 +64,15 @@ class ActiveRecordTest extends TestCase
         $this->assertNull($post->getPrimaryKey());
     }
 
+    public function testSetGetHasAttribute()
+    {
+        $post = new Post();
+        $this->assertFalse($post->hasAttribute('title'));
+        $post->setAttribute('title', 'This is title');
+        $this->assertTrue($post->hasAttribute('title'));
+        $this->assertEquals('This is title', $post->getAttribute('title'));
+    }
+
 //    public function testAddObjectAsAttributeAndProperty()
 //    {
 //        $post   = new Post();
