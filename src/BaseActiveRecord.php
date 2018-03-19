@@ -78,7 +78,7 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
     private $_relationsDependencies = [];
 
     /**
-     * @since 2018-03-13 13:04:14
+     * @done
      * @return Connection|null
      */
     public static function getDb()
@@ -86,18 +86,26 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
         return \Yii::$app->arangodb;
     }
 
+    /**
+     * @done
+     * @return string
+     */
     public static function collectionName()
     {
-        // @todo: create format for prefix
         return '%' . Inflector::camel2id(StringHelper::basename(get_called_class()), '_');
     }
 
+    /**
+     * @done
+     * @return mixed
+     */
     public static function collectionNamePrefixed()
     {
         return static::getDb()->replaceCollectionPrefix(static::collectionName());
     }
 
     /**
+     * @done
      * Initializes the object.
      * This method is called at the end of the constructor.
      * The default implementation will trigger an [[EVENT_INIT]] event.
@@ -109,6 +117,7 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
     }
 
     /**
+     * @done
      * Returns a value indicating whether the current record is new.
      * @return bool whether the record is new and should be inserted when calling [[save()]].
      */
@@ -120,8 +129,8 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
     /**
      * Only _id is the primary key
      *
-     * @since 2018-03-13 13:49:42
-     * @return array|string[]
+     * @done
+     * @return string[]
      */
     public static function primaryKey()
     {
@@ -129,9 +138,8 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
     }
 
     /**
+     * @done
      * Only _id is the primary key
-     *
-     * @since 2018-03-13 13:52:18
      *
      * @param array $keys
      *
@@ -152,9 +160,17 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
         return true;
     }
 
+    /**
+     * @done
+     * @since 2018-03-19 09:25:35
+     *
+     * @param bool $asArray
+     *
+     * @return mixed|null
+     */
     public function getPrimaryKey($asArray = false)
     {
-        return $this->_document->getId();
+        return $this->getIsNewRecord() ? null : $this->_document->getId();
     }
 
     public function __get($name)
