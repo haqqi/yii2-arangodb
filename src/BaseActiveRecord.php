@@ -60,10 +60,22 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
      */
     const EVENT_AFTER_REFRESH = 'afterRefresh';
 
-    /** @var Document to hold attribute of the active record */
+    /**
+     * @var Document to hold attribute of the active record. It also serves as old attributes
+     */
     private $_document;
-    /** @var array Related object */
+    /**
+     * @var array attribute values indexed by attribute names
+     */
+    private $_attributes = [];
+    /**
+     * @var array related models indexed by the relation names
+     */
     private $_related = [];
+    /**
+     * @var array relation names indexed by their link attributes
+     */
+    private $_relationsDependencies = [];
 
     /**
      * @since 2018-03-13 13:04:14
