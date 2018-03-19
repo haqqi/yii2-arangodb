@@ -121,8 +121,10 @@ class QueryBuilder extends BaseObject
     private $_whereParams = [];
     protected function createParamValue($value)
     {
+        // random number to prevent clash with custom param
+        $random = rand(10000, 99999);
         $number = count($this->_whereParams);
-        $paramName = "paramWhere{$number}";
+        $paramName = "where{$random}{$number}";
         $this->_whereParams[$paramName] = $value;
 
         return "@" . $paramName;
