@@ -278,7 +278,6 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
      * @param null $attributes
      *
      * @return bool
-     * @throws \yii\base\Exception
      */
     public function insert($runValidation = true, $attributes = null)
     {
@@ -292,14 +291,50 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
 
         // @todo: prepare event before save
 
-        try {
-            $documentHandler = static::getDb()->documentHandler;
-            $documentHandler->save(static::collectionNamePrefixed(), $this->_document);
-        } catch (Exception $e) {
-            throw new \yii\base\Exception($e->getMessage());
-        }
+//        try {
+//            $documentHandler = static::getDb()->documentHandler;
+//            $documentHandler->save(static::collectionNamePrefixed(), $this->_document);
+//        } catch (Exception $e) {
+//            \Yii::info(\get_called_class() . ' not inserted due to database server error.', __METHOD__);
+//            return false;
+//        }
 
         // @todo: prepare event after save
+    }
+
+    /**
+     * Returns the attribute values that have been modified since they are loaded or saved most recently.
+     *
+     * The comparison of new and old values is made for identical values using `===`.
+     *
+     * @param string[]|null $names the names of the attributes whose values may be returned if they are
+     * changed recently. If null, all attributes will be used.
+     *
+     * @return array the changed attribute values (name-value pairs)
+     */
+    public function getDirtyAttributes($names = null)
+    {
+        if ($names !== null) {
+            $names = \array_flip($names);
+        }
+        // setup the attributes
+        $attributes = [];
+
+        if ($this->_document === null) {
+            foreach ($this->_attributes as $name => $value) {
+                if ($names === null || isset($names[$name])) {
+                    $attributes[$name] = $value;
+                }
+            }
+        } else {
+            foreach ($this->_attributes as $name => $value) {
+                if (($names === null || isset($names[$name])) && $value !== $this->_document->get($name)) {
+                    $attributes[$name] = $value;
+                }
+            }
+        }
+
+        return $attributes;
     }
 
     /**
@@ -357,8 +392,11 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
     /**
      * Populates the named relation with the related records.
      * Note that this method does not check if the relation exists or not.
-     * @param string $name the relation name, e.g. `orders` for a relation defined via `getOrders()` method (case-sensitive).
+     *
+     * @param string                           $name the relation name, e.g. `orders` for a relation defined via
+     *     `getOrders()` method (case-sensitive).
      * @param ActiveRecordInterface|array|null $records the related records to be populated into the relation.
+     *
      * @see getRelation()
      */
     public function populateRelation($name, $records)
@@ -368,7 +406,10 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
 
     /**
      * Check whether the named relation has been populated with records.
-     * @param string $name the relation name, e.g. `orders` for a relation defined via `getOrders()` method (case-sensitive).
+     *
+     * @param string $name the relation name, e.g. `orders` for a relation defined via `getOrders()` method
+     *     (case-sensitive).
+     *
      * @return bool whether relation has been populated with records.
      * @see getRelation()
      */
@@ -391,7 +432,9 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
      * Returns a value indicating whether the given active record is the same as the current one.
      * The comparison is made by comparing the table names and the primary key values of the two active records.
      * If one of the records [[isNewRecord|is new]] they are also considered not equal.
+     *
      * @param ActiveRecordInterface $record record to compare to
+     *
      * @return bool whether the two active records refer to the same row in the same database table.
      */
     public function equals($record)

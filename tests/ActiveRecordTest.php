@@ -97,6 +97,21 @@ class ActiveRecordTest extends TestCase
         $this->assertTrue($post->__isset('documentProperty'));
     }
 
+    public function testDirtyAttributes()
+    {
+        $post          = new Post();
+        $post->title   = 'Awesome';
+        $post->content = 'Just Content';
+
+        $this->assertEquals([
+            'title'   => 'Awesome',
+            'content' => 'Just Content'
+        ], $post->getDirtyAttributes());
+        $this->assertEquals([
+            'title' => 'Awesome'
+        ], $post->getDirtyAttributes(['title']));
+    }
+
 //    public function testInsert()
 //    {
 //        $post = new Post();
