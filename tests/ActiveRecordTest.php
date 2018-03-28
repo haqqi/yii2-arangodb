@@ -112,18 +112,25 @@ class ActiveRecordTest extends TestCase
         ], $post->getDirtyAttributes(['title']));
     }
 
-//    public function testInsert()
-//    {
-//        $post = new Post();
-//
-//        // no primary key at beginning
-//        $this->assertNull($post->getPrimaryKey());
-//
-//        $post->innerProperty = 'Just inner property';
-//        $post->title         = 'Just a title';
-//        $post->insert();
-//
-//        // primary key as string
-//        $this->assertTrue(\is_string($post->getPrimaryKey()));
-//    }
+    public function testInsert()
+    {
+        $post = new Post();
+
+        // no primary key at beginning
+        $this->assertNull($post->getPrimaryKey());
+
+        $post->innerProperty = 'Just inner property';
+        $post->title         = 'Just a title';
+        $post->insert();
+
+        // primary key as string
+        $this->assertTrue(\is_string($post->getPrimaryKey()));
+
+        // test dirty attributes again
+        $this->assertEmpty($post->getDirtyAttributes());
+        $post->title = 'Awesome';
+        $this->assertEquals([
+            'title' => 'Awesome'
+        ], $post->getDirtyAttributes());
+    }
 }

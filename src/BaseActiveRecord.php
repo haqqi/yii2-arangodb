@@ -65,6 +65,10 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
     const EVENT_AFTER_REFRESH = 'afterRefresh';
 
     /**
+     * @var string Document class to be used
+     */
+    public $documentClass = Document::class;
+    /**
      * @var Document to hold attribute of the active record. It also serves as old attributes
      */
     private $_document;
@@ -291,15 +295,32 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
 
         // @todo: prepare event before save
 
-//        try {
-//            $documentHandler = static::getDb()->documentHandler;
-//            $documentHandler->save(static::collectionNamePrefixed(), $this->_document);
-//        } catch (Exception $e) {
-//            \Yii::info(\get_called_class() . ' not inserted due to database server error.', __METHOD__);
-//            return false;
-//        }
+        $dirtyAttributes = $this->getDirtyAttributes($attributes);
 
-        // @todo: prepare event after save
+        try {
+            $documentClass = $this->documentClass;
+            /** @var Document $document */
+            $document = new $documentClass();
+
+            // set the attribute
+            foreach ($dirtyAttributes as $name => $value) {
+                $document->set($name, $value);
+            }
+
+            // finally, save it!!
+            $documentHandler = static::getDb()->documentHandler;
+            $documentHandler->save(static::collectionNamePrefixed(), $document);
+
+            // update attributes
+            $this->_attributes = $document->getAll();
+            // put this as old attributes
+            $this->_document = $document;
+
+            // @todo: prepare event after save
+        } catch (Exception $e) {
+            \Yii::info(\get_called_class() . ' not inserted due to database server error.', __METHOD__);
+            return false;
+        }
     }
 
     /**
