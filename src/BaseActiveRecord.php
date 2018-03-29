@@ -8,10 +8,12 @@ use ArangoDBClient\Exception;
 use ArangoDBClient\ValueValidator;
 use yii\base\InvalidArgumentException;
 use yii\base\Model;
+use yii\base\ModelEvent;
 use yii\base\UnknownMethodException;
 use yii\base\UnknownPropertyException;
 use yii\db\ActiveQueryInterface;
 use yii\db\ActiveRecordInterface;
+use yii\db\AfterSaveEvent;
 use yii\helpers\Inflector;
 use yii\helpers\StringHelper;
 
@@ -293,8 +295,11 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
         // note: because ArangoDB transaction is using fully js, it is not supported
         // in Active Record. https://docs.arangodb.com/3.3/Manual/Transactions/
 
-        // @todo: prepare event before save
+        if (!$this->beforeSave(true)) {
+            return false;
+        }
 
+        // get the keys
         $dirtyAttributes = $this->getDirtyAttributes($attributes);
 
         try {
@@ -316,9 +321,11 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
             // put this as old attributes
             $this->_document = $document;
 
-            // @todo: prepare event after save
+            $changedAttributes = \array_fill_keys(\array_keys($dirtyAttributes), null);
+            $this->afterSave(true, $changedAttributes);
         } catch (Exception $e) {
             \Yii::info(\get_called_class() . ' not inserted due to database server error.', __METHOD__);
+            \Yii::info($e->getMessage(), __METHOD__);
             return false;
         }
     }
@@ -498,5 +505,64 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
             list(, $viaQuery) = $relation->via;
             $this->setRelationDependencies($name, $viaQuery);
         }
+    }
+
+    /**
+     * This method is called at the beginning of inserting or updating a record.
+     *
+     * The default implementation will trigger an [[EVENT_BEFORE_INSERT]] event when `$insert` is `true`,
+     * or an [[EVENT_BEFORE_UPDATE]] event if `$insert` is `false`.
+     * When overriding this method, make sure you call the parent implementation like the following:
+     *
+     * ```php
+     * public function beforeSave($insert)
+     * {
+     *     if (!parent::beforeSave($insert)) {
+     *         return false;
+     *     }
+     *
+     *     // ...custom code here...
+     *     return true;
+     * }
+     * ```
+     *
+     * @param bool $insert whether this method called while inserting a record.
+     * If `false`, it means the method is called while updating a record.
+     *
+     * @return bool whether the insertion or updating should continue.
+     * If `false`, the insertion or updating will be cancelled.
+     */
+    public function beforeSave($insert)
+    {
+        $event = new ModelEvent();
+        $this->trigger($insert ? self::EVENT_BEFORE_INSERT : self::EVENT_BEFORE_UPDATE, $event);
+
+        return $event->isValid;
+    }
+
+    /**
+     * This method is called at the end of inserting or updating a record.
+     * The default implementation will trigger an [[EVENT_AFTER_INSERT]] event when `$insert` is `true`,
+     * or an [[EVENT_AFTER_UPDATE]] event if `$insert` is `false`. The event class used is [[AfterSaveEvent]].
+     * When overriding this method, make sure you call the parent implementation so that
+     * the event is triggered.
+     *
+     * @param bool  $insert whether this method called while inserting a record.
+     * If `false`, it means the method is called while updating a record.
+     * @param array $changedAttributes The old values of attributes that had changed and were saved.
+     * You can use this parameter to take action based on the changes made for example send an email
+     * when the password had changed or implement audit trail that tracks all the changes.
+     * `$changedAttributes` gives you the old attribute values while the active record (`$this`) has
+     * already the new, updated values.
+     *
+     * Note that no automatic type conversion performed by default. You may use
+     * [[\yii\behaviors\AttributeTypecastBehavior]] to facilitate attribute typecasting.
+     * See http://www.yiiframework.com/doc-2.0/guide-db-active-record.html#attributes-typecasting.
+     */
+    public function afterSave($insert, $changedAttributes)
+    {
+        $this->trigger($insert ? self::EVENT_AFTER_INSERT : self::EVENT_AFTER_UPDATE, new AfterSaveEvent([
+            'changedAttributes' => $changedAttributes,
+        ]));
     }
 }
