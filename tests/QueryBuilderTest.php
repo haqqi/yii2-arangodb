@@ -32,6 +32,20 @@ class QueryBuilderTest extends TestCase
         return $queryBuilder;
     }
 
+    public function testBuildFromOnlyEscaped()
+    {
+        $expected = "FOR `inbound` IN `inbound` RETURN `inbound`";
+        $query = new Query();
+        
+        $query->from('inbound');
+
+        $queryBuilder = new QueryBuilder($query);
+
+        list($aql,) = $queryBuilder->build();
+
+        $this->assertEquals($expected, $aql);
+    }
+
 //    /**
 //     * @depends testBuildFromOnly
 //     *
