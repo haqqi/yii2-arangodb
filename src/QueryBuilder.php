@@ -208,7 +208,7 @@ class QueryBuilder extends BaseObject
             $returnDefinition[$column] = "$column: " . $this->normalizeColumnName($column);
         }
 
-        return "RETURN { " . \implode(', ', $returnDefinition) . "}";
+        return "RETURN { " . \implode(', ', $returnDefinition) . " }";
     }
 
     /**

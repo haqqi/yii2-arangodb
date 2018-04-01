@@ -14,8 +14,6 @@ use haqqi\arangodb\QueryBuilder;
 
 class QueryBuilderTest extends TestCase
 {
-
-
     public function testBuildFromOnly()
     {
         $expected = "FOR post IN post RETURN post";
@@ -36,7 +34,7 @@ class QueryBuilderTest extends TestCase
     {
         $expected = "FOR `inbound` IN `inbound` RETURN `inbound`";
         $query = new Query();
-        
+
         $query->from('inbound');
 
         $queryBuilder = new QueryBuilder($query);
@@ -46,15 +44,19 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals($expected, $aql);
     }
 
-//    /**
-//     * @depends testBuildFromOnly
-//     *
-//     * @param QueryBuilder $queryBuilder
-//     */
-//    public function testBuildFromAndSelect(QueryBuilder $queryBuilder)
-//    {
-//        $expected = "FOR `post` IN `post` RETURN `post`.`title`";
-//
-//        $queryBuilder->query->select(['title']);
-//    }
+    /**
+     * @depends testBuildFromOnly
+     *
+     * @param QueryBuilder $queryBuilder
+     */
+    public function testBuildFromAndSelect(QueryBuilder $queryBuilder)
+    {
+        $expected = "FOR post IN post RETURN { title: post.title, content: post.content }";
+
+        $queryBuilder->query->select(['title', 'content']);
+
+        list($aql,) = $queryBuilder->build();
+
+        $this->assertEquals($expected, $aql);
+    }
 }
