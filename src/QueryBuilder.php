@@ -5,8 +5,49 @@ namespace haqqi\arangodb;
 use yii\base\BaseObject;
 use yii\base\InvalidArgumentException;
 
+/**
+ * Class QueryBuilder
+ * @package haqqi\arangodb
+ *
+ * @property Query $query
+ */
 class QueryBuilder extends BaseObject
 {
+    const KEYWORDS = [
+        'aggregate',
+        'all',
+        'and',
+        'any',
+        'asc',
+        'collect',
+        'desc',
+        'distinct',
+        'false',
+        'filter',
+        'for',
+        'graph',
+        'in',
+        'inbound',
+        'insert',
+        'into',
+        'let',
+        'limit',
+        'none',
+        'not',
+        'null',
+        'or',
+        'outbound',
+        'remove',
+        'replace',
+        'return',
+        'shortest_path',
+        'sort',
+        'true',
+        'update',
+        'upsert',
+        'with'
+    ];
+
     /** @var Query */
     private $_query;
 
@@ -26,12 +67,27 @@ class QueryBuilder extends BaseObject
     }
 
     /**
+     * @return Query
+     */
+    public function getQuery(): Query
+    {
+        return $this->_query;
+    }
+
+    /**
+     * @param Query $query
+     */
+    public function setQuery(Query $query)
+    {
+        $this->_query = $query;
+    }
+
+    /**
      * @since 2017-12-13 12:09:01
      *
-     * @param Query $query
      * @param array $params
      *
-     * @return string
+     * @return array
      */
     public function build($params = [])
     {
@@ -47,19 +103,12 @@ class QueryBuilder extends BaseObject
 
         $clauses = \array_filter($clauses);
 
-        $aql = \implode($this->separator, $clauses);
+        $aql    = \implode($this->separator, $clauses);
         $params = $this->_whereParams;
 
         return [$aql, $params];
     }
 
-    /**
-     * @since 2017-12-12 19:39:26
-     *
-     * @param $collectionName
-     *
-     * @return string
-     */
     protected function buildFrom()
     {
         $collectionName = \trim($this->_query->getFrom());
@@ -70,28 +119,30 @@ class QueryBuilder extends BaseObject
 
         return $collectionName ? "FOR $asName IN $collectionName" : '';
     }
-    
+
     protected function buildWhere()
     {
         // reset just in case
-        $condition = "";
+        $condition          = "";
         $this->_whereParams = [];
-        $where = $this->_query->getWhere();
-        
-        
+        $where              = $this->_query->getWhere();
+
+
         if (!empty($where)) {
             if (is_array($where)) {
                 $condition = $this->createWhereFromArray($where);
-            } else if (is_string($where)) {
-                $condition = $where;
             } else {
-                throw new InvalidArgumentException("Where arguments only support string and array");
+                if (is_string($where)) {
+                    $condition = $where;
+                } else {
+                    throw new InvalidArgumentException("Where arguments only support string and array");
+                }
             }
         }
 
-        return $condition === "" ? "" : "FILTER " . $condition; 
+        return $condition === "" ? "" : "FILTER " . $condition;
     }
-    
+
     protected function createWhereFromArray($condition)
     {
         // array [ operator, field, value ] 
@@ -113,18 +164,19 @@ class QueryBuilder extends BaseObject
 
         // array [ field => value ]
         $rawField = array_keys($condition);
-        $field = $this->normalizeColumnName($rawField[0]);
-        $value = $this->createParamValue($condition[$rawField[0]]);
+        $field    = $this->normalizeColumnName($rawField[0]);
+        $value    = $this->createParamValue($condition[$rawField[0]]);
         return $field . " == " . $value;
     }
 
     private $_whereParams = [];
+
     protected function createParamValue($value)
     {
         // random number to prevent clash with custom param
-        $random = rand(10000, 99999);
-        $number = count($this->_whereParams);
-        $paramName = "where{$random}{$number}";
+        $random                         = rand(10000, 99999);
+        $number                         = count($this->_whereParams);
+        $paramName                      = "where{$random}{$number}";
         $this->_whereParams[$paramName] = $value;
 
         return "@" . $paramName;
@@ -226,9 +278,14 @@ class QueryBuilder extends BaseObject
             return $name;
         }
 
+        // if it is not reserved keywords, no need to escape
+        if(!\in_array($name, static::KEYWORDS)) {
+            return $name;
+        }
+
         return \sprintf('`%s`', $name);
     }
-    
+
     protected function quoteValue($value)
     {
         if (is_null($value)) {
@@ -238,7 +295,7 @@ class QueryBuilder extends BaseObject
         if (!is_string($value)) {
             return $value;
         }
-        
+
         $value = addslashes($value);
         return \sprintf('"%s"', $value);
     }
