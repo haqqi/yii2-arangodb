@@ -261,7 +261,7 @@ class QueryBuilder extends BaseObject
         }
         $orders = [];
         foreach ($columns as $name => $direction) {
-            $orders[] = $this->normalizeColumnName($name) . ($direction === SORT_DESC ? ' DESC' : ''); // @todo: quote column name
+            $orders[] = $this->normalizeColumnName($name) . ($direction === SORT_DESC ? ' DESC' : '');
         }
 
         return 'SORT ' . implode(', ', $orders);

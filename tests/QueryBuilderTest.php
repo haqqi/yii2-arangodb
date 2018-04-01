@@ -71,4 +71,18 @@ class QueryBuilderTest extends TestCase
 
         $this->assertEquals($expected, $aql);
     }
+
+    public function testBuildOrderBy()
+    {
+        $expected = "FOR post IN post SORT post.title DESC, post.content RETURN post";
+
+        $query = new Query();
+        $query->from('post')->orderBy(['title' => \SORT_DESC, 'content' => \SORT_ASC]);
+
+        $queryBuilder = new QueryBuilder($query);
+
+        list($aql,) = $queryBuilder->build();
+
+        $this->assertEquals($expected, $aql);
+    }
 }
