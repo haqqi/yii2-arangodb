@@ -33,8 +33,8 @@ class QueryBuilderTest extends TestCase
     public function testBuildFromOnlyEscaped()
     {
         $expected = "FOR `inbound` IN `inbound` RETURN `inbound`";
-        $query = new Query();
 
+        $query = new Query();
         $query->from('inbound');
 
         $queryBuilder = new QueryBuilder($query);
@@ -44,16 +44,28 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals($expected, $aql);
     }
 
-    /**
-     * @depends testBuildFromOnly
-     *
-     * @param QueryBuilder $queryBuilder
-     */
-    public function testBuildFromAndSelect(QueryBuilder $queryBuilder)
+    public function testBuildFromAndSelect()
     {
         $expected = "FOR post IN post RETURN { title: post.title, content: post.content }";
 
-        $queryBuilder->query->select(['title', 'content']);
+        $query = new Query();
+        $query->select(['title', 'content'])->from('post');
+
+        $queryBuilder = new QueryBuilder($query);
+
+        list($aql,) = $queryBuilder->build();
+
+        $this->assertEquals($expected, $aql);
+    }
+
+    public function testBuildLimit()
+    {
+        $expected = "FOR post IN post LIMIT 1, 10 RETURN post";
+
+        $query = new Query();
+        $query->from('post')->limit(10)->offset(1);
+
+        $queryBuilder = new QueryBuilder($query);
 
         list($aql,) = $queryBuilder->build();
 
