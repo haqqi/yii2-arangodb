@@ -226,8 +226,9 @@ class Query extends Component implements QueryInterface
      * @param array $condition
      *
      * @return Query
+     * @todo save $params to somewhere
      */
-    public function andWhere($condition): Query
+    public function andWhere($condition, $params = []): Query
     {
         if ($this->_where === null) {
             $this->_where = $condition;
